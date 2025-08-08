@@ -1,37 +1,47 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import Layout from './components/Layout';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
-import HomePage from './pages/HomePage'; // This will now be our 'Explore' page
+import DiscoverClubsPage from './pages/DiscoverClubsPage';
 import ClubDetailPage from './pages/ClubDetailPage';
-import ProtectedRoute from './components/ProtectedRoute';
+import EditClubPage from './pages/EditClubPage';
+import DiscoverEventsPage from './pages/DiscoverEventsPage';
+import ProfilePage from './pages/ProfilePage';
+import UserManagementPage from './pages/UserManagementPage'; // Nayi file import karein
+
+const ProtectedRoute = () => {
+    const { user, loading } = useAuth();
+    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+    return user ? <Layout><Outlet /></Layout> : <Navigate to="/auth" />;
+};
 
 function App() {
-  const { user, loading } = useAuth();
+    const { user, loading } = useAuth();
+    if (loading) return <div className="min-h-screen flex items-center justify-center font-bold text-xl">Loading CampusConnect...</div>;
 
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center font-bold text-xl">Loading CampusConnect...</div>;
-  }
+    return (
+        <Routes>
+            <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
+            
+            <Route element={<ProtectedRoute />}>
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/clubs" element={<DiscoverClubsPage />} />
+                <Route path="/clubs/:clubId" element={<ClubDetailPage />} />
+                <Route path="/clubs/:clubId/edit" element={<EditClubPage />} />
+                <Route path="/events" element={<DiscoverEventsPage />} />
+                
+                {/* Naya Admin Route */}
+                <Route path="/admin/user-management" element={<UserManagementPage />} />
+                
+                <Route path="/" element={<Navigate to="/dashboard" />} />
+            </Route>
 
-  return (
-    <Routes>
-      {/* Route for authentication page */}
-      <Route path="/auth" element={user ? <Navigate to="/dashboard" /> : <AuthPage />} />
-      
-      {/* Protected Routes - only accessible when logged in */}
-      <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/explore" element={<HomePage />} />
-        <Route path="/clubs/:clubId" element={<ClubDetailPage />} />
-        {/* The root path now redirects to the dashboard if logged in */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-      </Route>
-
-      {/* Fallback for any other path, redirects to login if not authenticated */}
-      <Route path="*" element={<Navigate to="/auth" />} />
-    </Routes>
-  );
+            <Route path="*" element={<Navigate to={user ? "/" : "/auth" } />} />
+        </Routes>
+    );
 }
 
 export default App;

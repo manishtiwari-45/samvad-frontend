@@ -11,7 +11,7 @@ const DashboardPage = () => {
 
   const renderDashboard = () => {
     if (!user) return <div>Loading...</div>;
-
+    debugger;
     switch (user.role) {
       case 'student':
         return <StudentDashboard />;
