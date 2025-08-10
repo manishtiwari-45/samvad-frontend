@@ -1,37 +1,33 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import Header from '../components/Header';
+// Purana Header import hata diya gaya hai
 import StudentDashboard from '../components/dashboards/StudentDashboard';
 import ClubAdminDashboard from '../components/dashboards/ClubAdminDashboard';
-// ... (imports remain the same)
-import SuperAdminDashboard from '../components/dashboards/SuperAdminDashboard'; // <-- Add this import
+import SuperAdminDashboard from '../components/dashboards/SuperAdminDashboard';
 
 const DashboardPage = () => {
   const { user } = useAuth();
 
+  // Yeh function decide karega ki kaun sa dashboard dikhana hai
   const renderDashboard = () => {
-    if (!user) return <div>Loading...</div>;
-    debugger;
+    if (!user) {
+        return <div>Loading...</div>; // Ya ek loading spinner
+    }
+
     switch (user.role) {
       case 'student':
         return <StudentDashboard />;
       case 'club_admin':
         return <ClubAdminDashboard />;
       case 'super_admin':
-        return <SuperAdminDashboard />; // <-- This line renders our new component
+        return <SuperAdminDashboard />;
       default:
         return <div>Unknown user role.</div>;
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderDashboard()}
-      </main>
-    </div>
-  );
+  // Component ab sirf sahi dashboard ko render karega
+  return renderDashboard();
 };
 
 export default DashboardPage;

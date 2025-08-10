@@ -3,7 +3,6 @@ import { getDashboardStats } from '../../services/api';
 import { Link } from 'react-router-dom';
 import { Users, TentTree, CalendarDays, HeartPulse, ShieldAlert, Settings, AlertTriangle, CheckCircle, Scan, UserCog, BarChart2, ShieldCheck } from 'lucide-react';
 
-// StatCard ka poora code
 const StatCard = ({ title, value, change, icon: Icon, color }) => (
     <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
         <div>
@@ -17,7 +16,6 @@ const StatCard = ({ title, value, change, icon: Icon, color }) => (
     </div>
 );
 
-// AlertItem ka poora code
 const AlertItem = ({ title, description, time, icon: Icon, color }) => (
     <div className={`border-l-4 border-${color}-500 bg-${color}-50 p-4 rounded-r-lg`}>
         <div className="flex items-start">
@@ -40,8 +38,11 @@ const SuperAdminDashboard = () => {
             try {
                 const response = await getDashboardStats();
                 setStats(response.data);
-            } catch (error) { console.error("Failed to fetch dashboard stats", error); } 
-            finally { setLoading(false); }
+            } catch (error) { 
+                console.error("Failed to fetch dashboard stats", error); 
+            } finally { 
+                setLoading(false); 
+            }
         };
         fetchStats();
     }, []);
@@ -92,7 +93,10 @@ const SuperAdminDashboard = () => {
                                 <UserCog className="h-8 w-8 text-blue-600 mb-2"/>
                                 <span className="font-semibold text-sm text-blue-800">User Management</span>
                             </Link>
-                            <button className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 text-center"><ShieldCheck className="h-8 w-8 text-green-600 mb-2"/><span className="font-semibold text-sm text-green-800">Club Oversight</span></button>
+                            <Link to="/admin/club-oversight" className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 text-center">
+                                <ShieldCheck className="h-8 w-8 text-green-600 mb-2"/>
+                                <span className="font-semibold text-sm text-green-800">Club Oversight</span>
+                            </Link>
                             <button className="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 text-center"><BarChart2 className="h-8 w-8 text-purple-600 mb-2"/><span className="font-semibold text-sm text-purple-800">Analytics</span></button>
                             <button className="flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 text-center"><Settings className="h-8 w-8 text-orange-600 mb-2"/><span className="font-semibold text-sm text-orange-800">System Config</span></button>
                         </div>
