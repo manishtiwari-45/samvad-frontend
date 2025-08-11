@@ -40,7 +40,7 @@ export const enrollFace = (imageBlob) => {
   });
 };
 
-// --- Verification (NAYE FUNCTIONS) ---
+// --- Verification ---
 export const sendOtp = (whatsappNumber) => apiClient.post('/verification/send-otp', { whatsapp_number: whatsappNumber });
 export const verifyOtp = (otp) => apiClient.post('/verification/verify-otp', { otp: otp });
 
@@ -48,7 +48,28 @@ export const verifyOtp = (otp) => apiClient.post('/verification/verify-otp', { o
 // --- Clubs ---
 export const getAllClubs = () => apiClient.get('/clubs/');
 export const getClubById = (clubId) => apiClient.get(`/clubs/${clubId}`);
-export const createClub = (clubData) => apiClient.post('/clubs/', clubData);
+
+// MODIFIED createClub function
+export const createClub = (clubData) => {
+    const formData = new FormData();
+
+    // Append all required and optional fields to the form data
+    formData.append('name', clubData.name);
+    formData.append('description', clubData.description);
+    formData.append('file', clubData.file);
+    formData.append('category', clubData.category);
+
+    if (clubData.contact_email) formData.append('contact_email', clubData.contact_email);
+    if (clubData.website_url) formData.append('website_url', clubData.website_url);
+    if (clubData.founded_date) formData.append('founded_date', clubData.founded_date);
+    if (clubData.coordinator_id) formData.append('coordinator_id', clubData.coordinator_id);
+    if (clubData.sub_coordinator_id) formData.append('sub_coordinator_id', clubData.sub_coordinator_id);
+    
+    return apiClient.post('/clubs/', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
+};
+
 export const joinClub = (clubId) => apiClient.post(`/clubs/${clubId}/join`);
 export const updateClub = (clubId, clubData) => apiClient.put(`/clubs/${clubId}`, clubData);
 export const deleteClub = (clubId) => apiClient.delete(`/clubs/${clubId}`);
@@ -73,6 +94,22 @@ export const uploadEventPhoto = (eventId, file) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+export const deletePhoto = (photoId) => apiClient.delete(`/photos/${photoId}`);
+export const deleteEventPhoto = (photoId) => apiClient.delete(`/events/photos/${photoId}`);
+
+// --- Common Gallery ---
+export const getGalleryPhotos = () => apiClient.get('/photos/gallery');
+export const uploadToGallery = (file, caption) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (caption) {
+    formData.append('caption', caption);
+  }
+  return apiClient.post('/photos/gallery', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+export const deleteGalleryPhoto = (photoId) => apiClient.delete(`/photos/gallery/${photoId}`);
 
 // --- Admin ---
 export const getAllUsers = () => apiClient.get('/admin/users');

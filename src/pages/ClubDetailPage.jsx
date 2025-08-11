@@ -1,195 +1,188 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { getClubById, joinClub, getAnnouncementsForClub, getEventPhotos } from '../services/api';
-import { useAuth } from '../context/AuthContext';
-import { Users, Star, Bell, Share2, MapPin, Calendar, Globe, Mail, Camera } from 'lucide-react';
-import Modal from '../components/Modal'; // Modal component ko import karein
+    import React, { useState, useEffect, useCallback } from 'react';
+    import { useParams, Link, useNavigate } from 'react-router-dom';
+    import { getClubById, joinClub, getAnnouncementsForClub } from '../services/api';
+    import { useAuth } from '../context/AuthContext';
+    import { Users, Bell, Share2, Globe, Mail, Calendar, User as UserIcon, Building, Tag, Edit } from 'lucide-react';
+    import { format } from 'date-fns';
 
-const ClubDetailPage = () => {
-    const { clubId } = useParams();
-    const { user } = useAuth();
-    const [club, setClub] = useState(null);
-    const [announcements, setAnnouncements] = useState([]);
-    const [loading, setLoading] = useState(true);
-    
-    // Photo Gallery ke liye naya state
-    const [isGalleryOpen, setIsGalleryOpen] = useState(false);
-    const [galleryPhotos, setGalleryPhotos] = useState([]);
-    const [galleryTitle, setGalleryTitle] = useState('');
+    // Helper component for the sidebar info
+    const InfoItem = ({ icon, label, value, href }) => {
+        const content = href ? <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">{value}</a> : <span>{value}</span>;
+        return (
+            <li className="flex justify-between items-center text-secondary">
+                <span className="flex items-center gap-2">
+                    {icon} {label}
+                </span>
+                <span className="font-semibold text-primary text-right">{content || 'N/A'}</span>
+            </li>
+        );
+    };
 
-    const fetchClubData = useCallback(async () => {
-        try {
-            setLoading(true);
-            const clubRes = await getClubById(clubId);
-            let clubData = clubRes.data; // Use let instead of const
+    const ClubDetailPage = () => {
+        const { clubId } = useParams();
+        const { user } = useAuth();
+        const navigate = useNavigate();
+        const [club, setClub] = useState(null);
+        const [announcements, setAnnouncements] = useState([]);
+        const [loading, setLoading] = useState(true);
 
-            // --- DUMMY DATA ADD KARNE KA CODE YAHAN HAI ---
-            if (clubData.events.length === 0) {
-                console.log("No real events found. Adding dummy events for UI testing.");
-                clubData.events = [
-                    { id: 998, name: "Dummy Event 1: Tech Workshop", date: "2025-09-15T14:00:00Z" },
-                    { id: 999, name: "Dummy Event 2: Music Night", date: "2025-09-20T19:00:00Z" },
-                ];
+        const fetchClubData = useCallback(async () => {
+            try {
+                setLoading(true);
+                const clubRes = await getClubById(clubId);
+                setClub(clubRes.data);
+                
+                const announcementsRes = await getAnnouncementsForClub(clubId);
+                setAnnouncements(announcementsRes.data);
+            } catch (error) {
+                console.error("Failed to fetch club data", error);
+                navigate('/clubs'); // Redirect if club not found
+            } finally {
+                setLoading(false);
             }
-            // ---------------------------------------------
-            
-            setClub(clubData); // Updated club data ko set karein
-            
-            const announcementsRes = await getAnnouncementsForClub(clubId);
-            setAnnouncements(announcementsRes.data);
-        } catch (error) {
-            console.error("Failed to fetch club data", error);
-        } finally {
-            setLoading(false);
-        }
-    }, [clubId]);
+        }, [clubId, navigate]);
 
-    useEffect(() => {
-        fetchClubData();
-    }, [fetchClubData]);
-
-    const handleJoinClub = async () => {
-        try {
-            await joinClub(clubId);
-            alert('Successfully joined the club!');
+        useEffect(() => {
             fetchClubData();
-        } catch (error) {
-            alert(error.response?.data?.detail || 'Could not join club.');
+        }, [fetchClubData]);
+
+        const handleJoinClub = async () => {
+            try {
+                await joinClub(clubId);
+                alert('Successfully joined the club!');
+                fetchClubData(); // Refresh data to show new member status
+            } catch (error) {
+                alert(error.response?.data?.detail || 'Could not join club.');
+            }
+        };
+
+        if (loading) {
+            return <div className="text-center p-10">Loading Club Details...</div>;
         }
-    };
-    
-    // Gallery open karne ke liye naya function
-    const handleViewGallery = async (event) => {
-        try {
-            setGalleryTitle(`Gallery: ${event.name}`);
-            setIsGalleryOpen(true); // Modal turant kholein
-            const response = await getEventPhotos(event.id);
-            setGalleryPhotos(response.data);
-        } catch (error) {
-            alert('Could not load photos for this event.');
-            setIsGalleryOpen(false); // Error aane par modal band karein
+
+        if (!club) {
+            return <div className="text-center p-10">Club not found.</div>;
         }
-    };
 
-    if (loading) return <div className="text-center">Loading Club Details...</div>;
-    if (!club) return <div className="text-center">Club not found.</div>;
+        const isMember = club.members.some(member => member.id === user.id);
+        const isAdmin = club.admin.id === user.id;
+        const isSuperAdmin = user.role === 'super_admin';
 
-    const isMember = club.members.some(member => member.id === user.id);
-    const dummyData = {
-        bannerUrl: `https://picsum.photos/seed/${club.id}/1200/300`,
-        rating: 4.8,
-        reviews: 99,
-        category: 'Technology',
-        founded: 2019,
-        website: 'techclub.edu',
-    };
+        const fallbackCover = `https://placehold.co/1200x400/1a202c/ffffff?text=${club.name.replace(/\s+/g, '+')}`;
 
-    return (
-        <>
-            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="h-48 md:h-64 bg-cover bg-center" style={{ backgroundImage: `url(${dummyData.bannerUrl})` }}></div>
-                <div className="p-6 md:p-8">
-                    <div className="md:flex justify-between items-start">
+        return (
+            <div className="font-sans">
+                {/* --- Banner Image --- */}
+                <div className="h-48 md:h-64 bg-cover bg-center relative" style={{ backgroundImage: `url(${club.cover_image_url || fallbackCover})` }}>
+                    <div className="absolute inset-0 bg-black/50"></div>
+                </div>
+
+                {/* --- Header Section --- */}
+                <div className="p-4 sm:p-6 md:p-8 bg-card border-b border-border">
+                    <div className="max-w-7xl mx-auto flex justify-between items-center">
                         <div>
-                            <h1 className="text-4xl font-extrabold text-gray-900">{club.name}</h1>
-                            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-gray-500">
+                            <h1 className="text-4xl font-extrabold text-primary">{club.name}</h1>
+                            <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-2 text-secondary">
                                 <span className="flex items-center"><Users size={16} className="mr-1.5" /> {club.members.length} members</span>
-                                <span className="flex items-center"><Star size={16} className="mr-1.5 text-yellow-500" /> {dummyData.rating} ({dummyData.reviews} reviews)</span>
-                                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">{dummyData.category}</span>
+                                <span className="flex items-center bg-background text-primary text-xs px-2 py-1 rounded-full"><Tag size={12} className="mr-1.5" /> {club.category}</span>
                             </div>
                         </div>
-                        <div className="flex space-x-2 mt-4 md:mt-0">
-                            {user.role === 'student' && !isMember && (
-                                <button onClick={handleJoinClub} className="px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">Join Club</button>
+                        <div className="flex items-center space-x-2">
+                            {isMember && <span className="px-4 py-2 bg-green-500/10 text-green-400 font-bold rounded-lg text-sm text-center">✓ Member</span>}
+                            {(isAdmin || isSuperAdmin) && (
+                                <span className="px-4 py-2 bg-blue-500/10 text-blue-400 font-bold rounded-lg text-sm text-center">Management Role</span>
                             )}
-                            {isMember && ( <span className="px-4 py-2 bg-green-100 text-green-800 font-bold rounded-lg text-center">✓ Member</span> )}
-                            {user.role !== 'student' && ( <span className="px-4 py-2 bg-gray-200 text-gray-700 font-bold rounded-lg text-center">Management Role</span> )}
-                            <button className="p-2 border rounded-lg" title="Get Notifications"><Bell size={20}/></button>
-                            <button className="p-2 border rounded-lg" title="Share"><Share2 size={20}/></button>
+                            {!isMember && !isAdmin && !isSuperAdmin && (
+                                <button onClick={handleJoinClub} className="px-4 py-2 bg-accent text-white font-bold rounded-lg hover:bg-accent-hover transition">Join Club</button>
+                            )}
+                            <button className="p-2 border border-border rounded-lg text-secondary hover:bg-background" title="Get Notifications"><Bell size={20}/></button>
+                            <button className="p-2 border border-border rounded-lg text-secondary hover:bg-background" title="Share"><Share2 size={20}/></button>
+                            {(isAdmin || isSuperAdmin) && (
+                                <button className="p-2 border border-border rounded-lg text-secondary bg-accent hover:bg-accent-hover hover:text-white" title="Edit Club"><Edit size={20}/></button>
+                            )}
                         </div>
                     </div>
+                </div>
 
-                    <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div className="lg:col-span-2 space-y-8">
-                            <div>
-                                <h2 className="text-2xl font-bold mb-4">About {club.name}</h2>
-                                <p className="text-gray-700 leading-relaxed">{club.description}</p>
+                {/* --- Main Content --- */}
+                <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column */}
+                    <div className="lg:col-span-2 space-y-10">
+                        <section>
+                            <h2 className="text-2xl font-bold text-primary mb-4">About {club.name}</h2>
+                            <p className="text-secondary leading-relaxed whitespace-pre-line">{club.description}</p>
+                        </section>
+                        
+                        <section>
+                            <h2 className="text-2xl font-bold text-primary mb-4">Leadership</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="bg-card border border-border p-4 rounded-lg">
+                                    <p className="text-sm text-secondary">Coordinator</p>
+                                    <p className="font-bold text-primary">{club.coordinator?.full_name || 'Not Assigned'}</p>
+                                </div>
+                                <div className="bg-card border border-border p-4 rounded-lg">
+                                    <p className="text-sm text-secondary">Sub-Coordinator</p>
+                                    <p className="font-bold text-primary">{club.sub_coordinator?.full_name || 'Not Assigned'}</p>
+                                </div>
                             </div>
+                        </section>
 
-                            <div className="pt-8 border-t">
-                                <h3 className="text-2xl font-bold mb-4">Events</h3>
-                                <div className="space-y-4">
+                        <section>
+                            <h2 className="text-2xl font-bold text-primary mb-4">Upcoming Events</h2>
+                            <div className="space-y-4">
                                 {club.events.length > 0 ? (
                                     club.events.map(event => (
-                                        <div key={event.id} className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                                        <div key={event.id} className="bg-card border border-border p-4 rounded-lg flex justify-between items-center">
                                             <div>
-                                                <p className="font-bold text-gray-800">{event.name}</p>
-                                                <p className="text-sm text-gray-500">{new Date(event.date).toLocaleDateString()}</p>
+                                                <p className="font-bold text-primary">{event.name}</p>
+                                                <p className="text-sm text-secondary">{format(new Date(event.date), 'MMMM d, yyyy \'at\' h:mm a')}</p>
                                             </div>
-                                            <button onClick={() => handleViewGallery(event)} className="flex items-center text-sm bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg hover:bg-indigo-200">
-                                                <Camera size={16} className="mr-2"/> View Gallery
-                                            </button>
+                                            <Link to={`/events/${event.id}`} className="text-sm font-semibold text-accent hover:underline">View Details</Link>
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-gray-500">No upcoming events from this club.</p>
+                                    <p className="text-secondary">No upcoming events from this club.</p>
                                 )}
-                                </div>
                             </div>
+                        </section>
+                        
+                        <section>
+                            <h2 className="text-2xl font-bold text-primary mb-4">Announcements</h2>
+                            <div className="space-y-4">
+                                {announcements.length > 0 ? announcements.map(announce => (
+                                    <div key={announce.id} className="bg-card border border-border p-4 rounded-lg">
+                                        <p className="font-bold text-primary">{announce.title}</p>
+                                        <p className="text-secondary mt-1">{announce.content}</p>
+                                        <p className="text-xs text-gray-500 mt-3">{format(new Date(announce.timestamp), 'PPpp')}</p>
+                                    </div>
+                                )) : (
+                                    <p className="text-secondary">No announcements from this club yet.</p>
+                                )}
+                            </div>
+                        </section>
+                    </div>
 
-                            <div className="pt-8 border-t">
-                                <h3 className="text-2xl font-bold mb-4">Announcements</h3>
-                                <div className="space-y-4">
-                                    {announcements.length > 0 ? announcements.map(announce => (
-                                        <div key={announce.id} className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-                                            <p className="font-bold text-indigo-800">{announce.title}</p>
-                                            <p className="text-gray-700 mt-1">{announce.content}</p>
-                                            <p className="text-xs text-gray-500 mt-2">{new Date(announce.timestamp).toLocaleString()}</p>
-                                        </div>
-                                    )) : (
-                                        <p className="text-gray-500">No announcements from this club yet.</p>
-                                    )}
-                                </div>
-                            </div>
+                    {/* Right Column (Sidebar) */}
+                    <div className="lg:col-span-1 space-y-6">
+                        <div className="bg-card border border-border rounded-lg p-4">
+                            <h3 className="text-lg font-bold text-primary border-b border-border pb-2 mb-3">Club Information</h3>
+                            <ul className="text-sm space-y-3">
+                                <InfoItem icon={<Building size={14}/>} label="Founded" value={club.founded_date ? format(new Date(club.founded_date), 'yyyy') : null} />
+                                <InfoItem icon={<Tag size={14}/>} label="Category" value={club.category} />
+                                <InfoItem icon={<Users size={14}/>} label="Admin" value={club.admin.full_name} />
+                            </ul>
                         </div>
-
-                        <div className="lg:col-span-1 space-y-6">
-                            <div>
-                                <h3 className="text-lg font-bold border-b pb-2 mb-3">Club Information</h3>
-                                <ul className="text-sm space-y-2">
-                                    <li className="flex justify-between"><span>Founded:</span> <span className="font-semibold">{dummyData.founded}</span></li>
-                                    <li className="flex justify-between"><span>Category:</span> <span className="font-semibold">{dummyData.category}</span></li>
-                                    <li className="flex justify-between"><span>Members:</span> <span className="font-semibold">{club.members.length}</span></li>
-                                    <li className="flex justify-between"><span>Rating:</span> <span className="font-semibold flex items-center"><Star size={14} className="mr-1 text-yellow-500"/>{dummyData.rating}</span></li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold border-b pb-2 mb-3">Get in Touch</h3>
-                                <ul className="text-sm space-y-2">
-                                    <li className="flex items-center"><Mail size={14} className="mr-2"/> <a href={`mailto:contact@${dummyData.website}`} className="text-indigo-600 hover:underline">contact@{dummyData.website}</a></li>
-                                    <li className="flex items-center"><Globe size={14} className="mr-2"/> <a href="#" className="text-indigo-600 hover:underline">Visit Website</a></li>
-                                </ul>
-                            </div>
+                        <div className="bg-card border border-border rounded-lg p-4">
+                            <h3 className="text-lg font-bold text-primary border-b border-border pb-2 mb-3">Get in Touch</h3>
+                            <ul className="text-sm space-y-3">
+                                <InfoItem icon={<Mail size={14}/>} label="Email" value={club.contact_email} href={club.contact_email ? `mailto:${club.contact_email}` : null} />
+                                <InfoItem icon={<Globe size={14}/>} label="Website" value={club.website_url} href={club.website_url} />
+                            </ul>
                         </div>
                     </div>
                 </div>
             </div>
+        );
+    };
 
-            <Modal isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} title={galleryTitle}>
-                {galleryPhotos.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {galleryPhotos.map(photo => (
-                            <div key={photo.id} className="overflow-hidden rounded-lg">
-                                <img src={photo.image_url} alt="Event" className="w-full h-full object-cover aspect-square"/>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No photos have been uploaded for this event yet.</p>
-                )}
-            </Modal>
-        </>
-    );
-};
-
-export default ClubDetailPage;
+    export default ClubDetailPage;

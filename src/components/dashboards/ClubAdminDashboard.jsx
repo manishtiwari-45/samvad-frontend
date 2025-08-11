@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createClub, getMyClubs, getClubById, uploadEventPhoto } from '../../services/api';
+import { createClub, getMyClubs, getClubById, uploadEventPhoto, createAnnouncement } from '../../services/api';
 import { Link } from 'react-router-dom';
-import { PlusCircleIcon, Users, Calendar, Camera, Loader2, ArrowRight, TentTree, Video } from 'lucide-react';
+import { PlusCircleIcon, Users, Calendar, Camera, Loader2, ArrowRight, TentTree, Video, Edit, ChevronDown, Megaphone, UploadCloud } from 'lucide-react';
 import Modal from '../Modal';
 
-// --- Helper Components (Dark Theme) ---
+// --- Helper Components ---
 
 const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
+    // This component remains the same
     const [file, setFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const handleFileChange = (e) => { if (e.target.files.length > 0) setFile(e.target.files[0]) };
@@ -26,7 +27,7 @@ const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
     };
     return (
         <div className="mt-4 p-4 bg-background rounded-lg border border-border">
-            <h4 className="text-sm font-semibold text-primary mb-2">Upload Photo</h4>
+            <h4 className="text-sm font-semibold text-primary mb-2">Upload Photo for this Event</h4>
             <div className="flex items-center space-x-2">
                 <input type="file" onChange={handleFileChange} className="text-sm text-secondary flex-grow file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent hover:file:bg-accent/20"/>
                 <button onClick={handleUpload} disabled={isUploading} className="bg-accent text-white px-3 py-2 rounded-md text-sm hover:bg-accent-hover disabled:bg-gray-500 flex items-center">
@@ -38,6 +39,7 @@ const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
 };
 
 const EventsManager = ({ clubId }) => {
+    // This component remains the same
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showUploadFor, setShowUploadFor] = useState(null);
@@ -71,9 +73,11 @@ const EventsManager = ({ clubId }) => {
 };
 
 const ManagedClubCard = ({ club, onManageEventsClick }) => {
+    // This component remains the same
     return (
         <div className="bg-card border border-border p-6 rounded-xl shadow-lg flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50">
             <div className="flex-grow space-y-4">
+                <div className="w-full h-40 mb-4 rounded-lg bg-cover bg-center" style={{backgroundImage: `url(${club.cover_image_url || 'https://picsum.photos/seed/default/400/200'})`}}></div>
                 <h3 className="text-2xl font-bold text-primary">{club.name}</h3>
                 <p className="text-secondary mt-1 line-clamp-2">{club.description}</p>
                 <div className="flex space-x-6">
@@ -84,30 +88,57 @@ const ManagedClubCard = ({ club, onManageEventsClick }) => {
             <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row gap-2">
                 <Link to={`/clubs/${club.id}`} className="flex-1 text-center bg-border text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accent/20 transition">View Page</Link>
                 <Link to={`/clubs/${club.id}/edit`} className="flex-1 text-center bg-accent/10 text-accent px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accent/20 transition">Edit Details</Link>
-                <button onClick={() => onManageEventsClick(club)} className="flex-1 justify-center items-center bg-purple-500/10 text-purple-400 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-500/20 transition">Manage Events</button>
+                <button onClick={() => onManageEventsClick(club)} className="flex-1 justify-center items-center bg-purple-500/10 text-purple-400 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-500/20 transition">Manage Photos</button>
             </div>
         </div>
     );
 };
 
+// --- Naya "Create Club" Form Component ---
 const CreateClubForm = ({ onClubCreated }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [coverPhoto, setCoverPhoto] = useState(null);
+    const [preview, setPreview] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleFileChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setCoverPhoto(file);
+            setPreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleCreateClub = async (e) => {
         e.preventDefault();
+        if (!coverPhoto) {
+            alert('Please upload a cover photo for the club.');
+            return;
+        }
+        setLoading(true);
         try {
-            await createClub({ name, description });
+            await createClub({ name, description, file: coverPhoto });
             alert('Club created successfully!');
-            setName(''); setDescription(''); onClubCreated();
-        } catch (error) { alert('Failed to create club. A club with this name may already exist.'); }
+            setName(''); 
+            setDescription('');
+            setCoverPhoto(null);
+            setPreview('');
+            onClubCreated();
+        } catch (error) { 
+            alert('Failed to create club. A club with this name may already exist.'); 
+        } finally {
+            setLoading(false);
+        }
     };
+    
     return (
         <div className="bg-card border border-border p-8 rounded-xl shadow-md animate-fade-in">
-            <h2 className="text-2xl font-bold text-primary mb-4 flex items-center">
-                <PlusCircleIcon className="h-7 w-7 mr-2 text-accent" />
+            <h2 className="text-2xl font-bold text-primary mb-6 flex items-center">
+                <PlusCircleIcon className="h-7 w-7 mr-3 text-accent" />
                 Create a New Club
             </h2>
-            <form onSubmit={handleCreateClub} className="space-y-4">
+            <form onSubmit={handleCreateClub} className="space-y-6">
                 <div>
                     <label className="block text-sm font-medium text-secondary">Club Name</label>
                     <input value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full p-3 bg-background border border-border rounded-md focus:ring-2 focus:ring-accent" required />
@@ -116,14 +147,34 @@ const CreateClubForm = ({ onClubCreated }) => {
                     <label className="block text-sm font-medium text-secondary">Club Description</label>
                     <textarea value={description} onChange={e => setDescription(e.target.value)} rows="4" className="mt-1 w-full p-3 bg-background border border-border rounded-md focus:ring-2 focus:ring-accent" required />
                 </div>
-                <button type="submit" className="w-full bg-accent text-white px-4 py-3 rounded-md hover:bg-accent-hover font-semibold transition-transform transform hover:scale-105">Create Club</button>
+                <div>
+                    <label className="block text-sm font-medium text-secondary">Cover Photo</label>
+                    <div className="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-md">
+                        <div className="space-y-1 text-center">
+                            {preview ? <img src={preview} alt="Cover preview" className="mx-auto h-24 w-auto rounded-md"/> : <UploadCloud className="mx-auto h-12 w-12 text-secondary"/>}
+                            <div className="flex text-sm text-secondary justify-center">
+                                <label htmlFor="file-upload" className="relative cursor-pointer bg-card rounded-md font-medium text-accent hover:text-accent-hover focus-within:outline-none">
+                                    <span>Upload a file</span>
+                                    <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept="image/*" />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs text-secondary">PNG, JPG up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" disabled={loading} className="w-full bg-accent text-white px-4 py-3 rounded-md hover:bg-accent-hover font-semibold transition-transform transform hover:scale-105 disabled:bg-gray-500 flex justify-center items-center">
+                    {loading && <Loader2 className="animate-spin mr-2"/>}
+                    Create Club
+                </button>
             </form>
         </div>
     );
 };
 
+
 // --- Main Component ---
-const ClubAdminDashboard = () => {
+const ClubAdminDashboard = ({...props}) => {
     const [managedClubs, setManagedClubs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('myClubs');
@@ -160,7 +211,7 @@ const ClubAdminDashboard = () => {
                     <button onClick={() => setActiveTab('attendance')} className={getTabClass('attendance')}><Video size={16} className="mr-2"/> AI Attendance</button>
                 </div>
 
-                <div>
+                <div className="mt-6">
                     {activeTab === 'myClubs' && (
                         <div className="animate-fade-in">
                             {managedClubs.length > 0 ? (
@@ -171,7 +222,7 @@ const ClubAdminDashboard = () => {
                                 </div>
                             ) : (
                                 <div className="bg-card border border-border p-8 rounded-xl shadow-md text-center">
-                                    <p className="text-secondary">You do not administer any clubs yet. Start by creating one!</p>
+                                    <p className="text-secondary">You do not administer any clubs yet. Start by creating one in the 'Create Club' tab!</p>
                                 </div>
                             )}
                         </div>
@@ -194,7 +245,7 @@ const ClubAdminDashboard = () => {
             </div>
 
             {selectedClub && (
-                <Modal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} title={`Manage Events for ${selectedClub.name}`}>
+                <Modal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} title={`Manage Photos for ${selectedClub.name}`}>
                     <EventsManager clubId={selectedClub.id} />
                 </Modal>
             )}
