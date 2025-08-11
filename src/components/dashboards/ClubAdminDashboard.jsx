@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createClub, getMyClubs, createAnnouncement, uploadEventPhoto, getClubById } from '../../services/api';
+import { createClub, getMyClubs, getClubById, uploadEventPhoto } from '../../services/api';
 import { Link } from 'react-router-dom';
-import { PlusCircleIcon, Users, Calendar, Megaphone, Edit, ChevronDown, Camera, Loader2, ArrowRight } from 'lucide-react';
+import { PlusCircleIcon, Users, Calendar, Camera, Loader2, ArrowRight, TentTree, Video } from 'lucide-react';
+import Modal from '../Modal';
 
-// Component: Photo Upload Form
+// --- Helper Components (Dark Theme) ---
+
 const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
     const [file, setFile] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-    const handleFileChange = (e) => { if (e.target.files.length > 0) { setFile(e.target.files[0]); } };
+    const handleFileChange = (e) => { if (e.target.files.length > 0) setFile(e.target.files[0]) };
     const handleUpload = async () => {
         if (!file) { alert("Please select a file first."); return; }
         setIsUploading(true);
@@ -16,25 +18,26 @@ const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
             alert("Photo uploaded successfully!");
             setFile(null);
             if (onUploadSuccess) onUploadSuccess();
-        } catch (error) { alert("Failed to upload photo. Please try again."); } 
-        finally { setIsUploading(false); }
+        } catch (error) {
+            alert("Failed to upload photo. Please try again.");
+        } finally {
+            setIsUploading(false);
+        }
     };
     return (
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-sm font-semibold mb-2">Upload Photo for this Event</h4>
+        <div className="mt-4 p-4 bg-background rounded-lg border border-border">
+            <h4 className="text-sm font-semibold text-primary mb-2">Upload Photo</h4>
             <div className="flex items-center space-x-2">
-                <input type="file" onChange={handleFileChange} className="text-sm flex-grow"/>
-                <button onClick={handleUpload} disabled={isUploading} className="bg-purple-600 text-white px-3 py-1 rounded-md text-sm hover:bg-purple-700 disabled:bg-gray-400 flex items-center">
-                    {isUploading && <Loader2 size={16} className="animate-spin mr-2"/>}
-                    Upload
+                <input type="file" onChange={handleFileChange} className="text-sm text-secondary flex-grow file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-accent/10 file:text-accent hover:file:bg-accent/20"/>
+                <button onClick={handleUpload} disabled={isUploading} className="bg-accent text-white px-3 py-2 rounded-md text-sm hover:bg-accent-hover disabled:bg-gray-500 flex items-center">
+                    {isUploading && <Loader2 size={16} className="animate-spin mr-2"/>} Upload
                 </button>
             </div>
         </div>
     );
 };
 
-// Component: Events List for Admins
-const EventListForAdmin = ({ clubId }) => {
+const EventsManager = ({ clubId }) => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showUploadFor, setShowUploadFor] = useState(null);
@@ -48,54 +51,45 @@ const EventListForAdmin = ({ clubId }) => {
         };
         fetchEvents();
     }, [clubId]);
-    if (loading) return <div className="text-sm text-gray-500 mt-4">Loading events...</div>;
+
+    if (loading) return <div className="text-sm text-secondary mt-4 text-center">Loading events...</div>;
     return (
         <div className="mt-4 space-y-2">
             {events.length > 0 ? events.map(event => (
-                <div key={event.id} className="p-3 bg-gray-100 rounded-lg">
+                <div key={event.id} className="p-3 bg-background rounded-lg">
                     <div className="flex justify-between items-center">
-                        <p className="font-semibold">{event.name}</p>
-                        <button onClick={() => setShowUploadFor(showUploadFor === event.id ? null : event.id)} className="flex items-center text-sm text-purple-600 hover:text-purple-800">
+                        <p className="font-semibold text-primary">{event.name}</p>
+                        <button onClick={() => setShowUploadFor(showUploadFor === event.id ? null : event.id)} className="flex items-center text-sm text-accent hover:text-accent-hover font-semibold">
                             <Camera size={16} className="mr-1"/> Upload Photo
                         </button>
                     </div>
                     {showUploadFor === event.id && <PhotoUploadForm eventId={event.id} onUploadSuccess={() => setShowUploadFor(null)} />}
                 </div>
-            )) : <p className="text-sm text-gray-500">No events found for this club.</p>}
+            )) : <p className="text-sm text-secondary text-center py-4">No events found for this club.</p>}
         </div>
     );
 };
 
-// Component: Managed Club Card
-const ManagedClubCard = ({ club }) => {
-    const [showEvents, setShowEvents] = useState(false);
+const ManagedClubCard = ({ club, onManageEventsClick }) => {
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col">
+        <div className="bg-card border border-border p-6 rounded-xl shadow-lg flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50">
             <div className="flex-grow space-y-4">
-                <div>
-                    <h3 className="text-2xl font-bold text-gray-800">{club.name}</h3>
-                    <p className="text-gray-500 mt-1 line-clamp-2">{club.description}</p>
-                </div>
+                <h3 className="text-2xl font-bold text-primary">{club.name}</h3>
+                <p className="text-secondary mt-1 line-clamp-2">{club.description}</p>
                 <div className="flex space-x-6">
-                    <div className="flex items-center text-gray-700"><Users size={18} className="mr-2 text-blue-500" /><span className="font-semibold">{club.member_count}</span><span className="ml-1">Members</span></div>
-                    <div className="flex items-center text-gray-700"><Calendar size={18} className="mr-2 text-green-500" /><span className="font-semibold">{club.event_count}</span><span className="ml-1">Events</span></div>
+                    <div className="flex items-center text-secondary"><Users size={18} className="mr-2 text-accent" /><span className="font-semibold text-primary">{club.member_count}</span><span className="ml-1.5">Members</span></div>
+                    <div className="flex items-center text-secondary"><Calendar size={18} className="mr-2 text-green-500" /><span className="font-semibold text-primary">{club.event_count}</span><span className="ml-1.5">Events</span></div>
                 </div>
             </div>
-            <div className="mt-4 pt-4 border-t">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    <Link to={`/clubs/${club.id}`} className="text-center bg-gray-100 text-gray-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200">View Page</Link>
-                    <Link to={`/clubs/${club.id}/edit`} className="text-center bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200">Edit Details</Link>
-                    <button onClick={() => setShowEvents(!showEvents)} className="flex justify-center items-center bg-purple-100 text-purple-800 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-200">
-                        Manage Events <ChevronDown size={16} className={`ml-2 transition-transform ${showEvents ? 'rotate-180' : ''}`} />
-                    </button>
-                </div>
-                {showEvents && <EventListForAdmin clubId={club.id} />}
+            <div className="mt-6 pt-4 border-t border-border flex flex-col sm:flex-row gap-2">
+                <Link to={`/clubs/${club.id}`} className="flex-1 text-center bg-border text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accent/20 transition">View Page</Link>
+                <Link to={`/clubs/${club.id}/edit`} className="flex-1 text-center bg-accent/10 text-accent px-4 py-2 rounded-lg text-sm font-semibold hover:bg-accent/20 transition">Edit Details</Link>
+                <button onClick={() => onManageEventsClick(club)} className="flex-1 justify-center items-center bg-purple-500/10 text-purple-400 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-500/20 transition">Manage Events</button>
             </div>
         </div>
     );
 };
 
-// Component: Create Club Form
 const CreateClubForm = ({ onClubCreated }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
@@ -108,75 +102,103 @@ const CreateClubForm = ({ onClubCreated }) => {
         } catch (error) { alert('Failed to create club. A club with this name may already exist.'); }
     };
     return (
-        <div className="bg-white p-6 rounded-xl shadow-lg mt-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center"><PlusCircleIcon className="h-7 w-7 mr-2 text-indigo-500" />Create a New Club</h2>
+        <div className="bg-card border border-border p-8 rounded-xl shadow-md animate-fade-in">
+            <h2 className="text-2xl font-bold text-primary mb-4 flex items-center">
+                <PlusCircleIcon className="h-7 w-7 mr-2 text-accent" />
+                Create a New Club
+            </h2>
             <form onSubmit={handleCreateClub} className="space-y-4">
-                <input value={name} onChange={e => setName(e.target.value)} placeholder="Club Name" className="w-full p-2 border rounded-md" required />
-                <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Club Description" className="w-full p-2 border rounded-md" required />
-                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 w-full">Create Club</button>
+                <div>
+                    <label className="block text-sm font-medium text-secondary">Club Name</label>
+                    <input value={name} onChange={e => setName(e.target.value)} className="mt-1 w-full p-3 bg-background border border-border rounded-md focus:ring-2 focus:ring-accent" required />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-secondary">Club Description</label>
+                    <textarea value={description} onChange={e => setDescription(e.target.value)} rows="4" className="mt-1 w-full p-3 bg-background border border-border rounded-md focus:ring-2 focus:ring-accent" required />
+                </div>
+                <button type="submit" className="w-full bg-accent text-white px-4 py-3 rounded-md hover:bg-accent-hover font-semibold transition-transform transform hover:scale-105">Create Club</button>
             </form>
         </div>
     );
 };
 
-// Main Component: Club Admin Dashboard
+// --- Main Component ---
 const ClubAdminDashboard = () => {
     const [managedClubs, setManagedClubs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('myClubs');
+    const [selectedClub, setSelectedClub] = useState(null);
+    const [isEventModalOpen, setIsEventModalOpen] = useState(false);
 
     const fetchManagedClubs = useCallback(async () => {
         setIsLoading(true);
         try {
             const response = await getMyClubs();
             setManagedClubs(response.data);
-        } catch (error) {
-            console.error("Failed to fetch managed clubs", error);
-        } finally {
-            setIsLoading(false);
-        }
+        } catch (error) { console.error("Failed to fetch managed clubs", error); } 
+        finally { setIsLoading(false); }
     }, []);
 
-    useEffect(() => {
-        fetchManagedClubs();
-    }, [fetchManagedClubs]);
+    useEffect(() => { fetchManagedClubs(); }, [fetchManagedClubs]);
+
+    const openEventModal = (club) => {
+        setSelectedClub(club);
+        setIsEventModalOpen(true);
+    };
+
+    const getTabClass = (tabName) => `px-4 py-2 font-semibold rounded-lg transition flex items-center ${activeTab === tabName ? 'bg-accent text-white shadow' : 'text-secondary hover:bg-border'}`;
 
     if (isLoading) return <div>Loading Admin Panel...</div>;
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8">
-            <h1 className="text-4xl font-bold text-gray-800">Club Admin Dashboard</h1>
-
-            {/* --- AI ATTENDANCE CARD KO UPDATE KIYA GAYA HAI --- */}
-            <Link to="/attendance/live" className="block bg-indigo-600 text-white p-6 rounded-xl shadow-lg hover:bg-indigo-700 transition-all transform hover:scale-[1.02]">
-                <div className="flex justify-between items-center">
-                    <div>
-                        <h2 className="text-2xl font-bold flex items-center">
-                            <Camera size={28} className="mr-3" />
-                            Start General Attendance
-                        </h2>
-                        <p className="mt-1 opacity-90">Start a general-purpose live attendance session.</p>
-                    </div>
-                    <ArrowRight size={32} />
+        <>
+            <div className="space-y-8">
+                <h1 className="text-4xl font-bold text-primary">Club Admin Dashboard</h1>
+                <div className="bg-card border border-border p-2 rounded-lg flex space-x-2">
+                    <button onClick={() => setActiveTab('myClubs')} className={getTabClass('myClubs')}><TentTree size={16} className="mr-2"/> My Clubs</button>
+                    <button onClick={() => setActiveTab('createClub')} className={getTabClass('createClub')}><PlusCircleIcon size={16} className="mr-2"/> Create Club</button>
+                    <button onClick={() => setActiveTab('attendance')} className={getTabClass('attendance')}><Video size={16} className="mr-2"/> AI Attendance</button>
                 </div>
-            </Link>
 
-            <div className="space-y-6">
-                <h2 className="text-2xl font-semibold text-gray-700">My Managed Clubs</h2>
-                {managedClubs.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {managedClubs.map(club => (
-                            <ManagedClubCard key={club.id} club={club} />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="bg-white p-8 rounded-xl shadow-lg text-center">
-                        <p className="text-gray-600">You do not administer any clubs yet.</p>
-                    </div>
-                )}
+                <div>
+                    {activeTab === 'myClubs' && (
+                        <div className="animate-fade-in">
+                            {managedClubs.length > 0 ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {managedClubs.map(club => (
+                                        <ManagedClubCard key={club.id} club={club} onManageEventsClick={openEventModal} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="bg-card border border-border p-8 rounded-xl shadow-md text-center">
+                                    <p className="text-secondary">You do not administer any clubs yet. Start by creating one!</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    {activeTab === 'createClub' && <CreateClubForm onClubCreated={() => { fetchManagedClubs(); setActiveTab('myClubs'); }} />}
+                    {activeTab === 'attendance' && (
+                        <div className="animate-fade-in">
+                            <Link to="/attendance/live" className="block bg-accent text-white p-6 rounded-xl shadow-lg hover:bg-accent-hover transition-all transform hover:scale-[1.02]">
+                                <div className="flex justify-between items-center">
+                                    <div>
+                                        <h2 className="text-2xl font-bold flex items-center"><Camera size={28} className="mr-3" />Start General Attendance</h2>
+                                        <p className="mt-1 opacity-90">Start a general-purpose live attendance session.</p>
+                                    </div>
+                                    <ArrowRight size={32} />
+                                </div>
+                            </Link>
+                        </div>
+                    )}
+                </div>
             </div>
-            
-            <CreateClubForm onClubCreated={fetchManagedClubs} />
-        </div>
+
+            {selectedClub && (
+                <Modal isOpen={isEventModalOpen} onClose={() => setIsEventModalOpen(false)} title={`Manage Events for ${selectedClub.name}`}>
+                    <EventsManager clubId={selectedClub.id} />
+                </Modal>
+            )}
+        </>
     );
 };
 

@@ -32,19 +32,17 @@ export const loginUser = (credentials) => {
 };
 export const fetchCurrentUser = () => apiClient.get('/users/me');
 export const getMyClubs = () => apiClient.get('/users/me/administered-clubs');
-
-// --- NAYA FUNCTION FACE ENROLLMENT KE LIYE ---
 export const enrollFace = (imageBlob) => {
   const formData = new FormData();
-  // Backend 'file' naam ka field expect kar raha hai.
   formData.append('file', imageBlob, 'face.jpg');
-
   return apiClient.post('/users/me/enroll-face', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+
+// --- Verification (NAYE FUNCTIONS) ---
+export const sendOtp = (whatsappNumber) => apiClient.post('/verification/send-otp', { whatsapp_number: whatsappNumber });
+export const verifyOtp = (otp) => apiClient.post('/verification/verify-otp', { otp: otp });
 
 
 // --- Clubs ---
@@ -71,16 +69,13 @@ export const getEventPhotos = (eventId) => apiClient.get(`/events/${eventId}/pho
 export const uploadEventPhoto = (eventId, file) => {
   const formData = new FormData();
   formData.append('file', file);
-
   return apiClient.post(`/events/${eventId}/photos`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
 
 // --- Admin ---
 export const getAllUsers = () => apiClient.get('/admin/users');
-export const updateUserRole = (userId, newRole) => apiClient.put(`/users/${userId}/role?new_role=${newRole}`);
+export const updateUserRole = (userId, newRole) => apiClient.put(`/admin/users/${userId}/role?new_role=${newRole}`);
 export const deleteUser = (userId) => apiClient.delete(`/admin/users/${userId}`);
 export const getDashboardStats = () => apiClient.get('/admin/stats');

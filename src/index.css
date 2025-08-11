@@ -4,6 +4,21 @@
 
 @layer base {
   html, body, #root {
-    @apply h-full bg-gray-50;
+    @apply h-full bg-background text-primary;
+  }
+
+  /* Ek chhota sa sudhaar aache scrollbar ke liye */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #161B22;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #30363D;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #444c56;
   }
 }

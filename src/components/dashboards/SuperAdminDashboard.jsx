@@ -1,35 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { getDashboardStats } from '../../services/api';
+import React, { useState, useEffect, useCallback } from 'react';
+import { getDashboardStats, getAllUsers, updateUserRole, deleteUser, getAllClubs, deleteClub } from '../../services/api';
 import { Link } from 'react-router-dom';
-import { Users, TentTree, CalendarDays, HeartPulse, ShieldAlert, Settings, AlertTriangle, CheckCircle, Scan, UserCog, BarChart2, ShieldCheck } from 'lucide-react';
+import { Users, TentTree, CalendarDays, HeartPulse, Trash, Edit, LayoutDashboard, UserCog, ShieldCheck } from 'lucide-react';
 
-const StatCard = ({ title, value, change, icon: Icon, color }) => (
-    <div className="bg-white p-6 rounded-lg shadow-md flex items-center justify-between">
-        <div>
-            <p className="text-sm text-gray-500">{title}</p>
-            <p className="text-3xl font-bold text-gray-800">{value}</p>
-            {change && <p className="text-xs text-green-500">{change}</p>}
-        </div>
-        <div className={`p-3 rounded-full bg-${color}-100 text-${color}-600`}>
-            <Icon size={24} />
-        </div>
-    </div>
-);
-
-const AlertItem = ({ title, description, time, icon: Icon, color }) => (
-    <div className={`border-l-4 border-${color}-500 bg-${color}-50 p-4 rounded-r-lg`}>
-        <div className="flex items-start">
-            <Icon className={`h-6 w-6 text-${color}-600 mr-3`} />
-            <div>
-                <p className={`font-semibold text-${color}-800`}>{title}</p>
-                <p className="text-sm text-gray-600">{description}</p>
-                <p className="text-xs text-gray-400 mt-1">{time}</p>
-            </div>
-        </div>
-    </div>
-);
-
-const SuperAdminDashboard = () => {
+// Panel 1: Overview
+const OverviewPanel = ({ setActiveTab }) => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -38,78 +13,118 @@ const SuperAdminDashboard = () => {
             try {
                 const response = await getDashboardStats();
                 setStats(response.data);
-            } catch (error) { 
-                console.error("Failed to fetch dashboard stats", error); 
-            } finally { 
-                setLoading(false); 
-            }
+            } catch (error) { console.error("Failed to fetch dashboard stats", error); } 
+            finally { setLoading(false); }
         };
         fetchStats();
     }, []);
 
-    if (loading) return <div>Loading Dashboard...</div>;
+    if (loading) return <div>Loading Overview...</div>;
+
+    const StatCard = ({ title, value, icon: Icon, color, onClick }) => (
+        <button onClick={onClick} disabled={!onClick} className={`w-full text-left bg-card border border-border p-6 rounded-lg flex items-center justify-between transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-accent/50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:opacity-70`}>
+            <div>
+                <p className="text-sm text-secondary">{title}</p>
+                <p className="text-3xl font-bold text-primary">{value}</p>
+            </div>
+            <div className={`p-3 rounded-full ${color}`}><Icon size={24} /></div>
+        </button>
+    );
+    
+    return (
+        <div className="space-y-8 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} color="bg-blue-500/10 text-blue-400" onClick={() => setActiveTab('userManagement')} />
+                <StatCard title="Active Clubs" value={stats?.active_clubs || 0} icon={TentTree} color="bg-green-500/10 text-green-400" onClick={() => setActiveTab('clubOversight')} />
+                <StatCard title="Total Events" value={stats?.total_events || 0} icon={CalendarDays} color="bg-purple-500/10 text-purple-400" />
+                <StatCard title="System Health" value="98.5%" icon={HeartPulse} color="bg-teal-500/10 text-teal-400" />
+            </div>
+        </div>
+    );
+};
+
+// Panel 2: User Management
+const UserManagementPanel = () => {
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const fetchUsers = useCallback(async () => { setLoading(true); try { const response = await getAllUsers(); setUsers(response.data); } catch (err) { console.error('Failed to fetch users.'); } finally { setLoading(false); } }, []);
+    useEffect(() => { fetchUsers(); }, [fetchUsers]);
+    const handleRoleChange = async (userId, newRole) => { if (!window.confirm(`Change role to ${newRole}?`)) return; try { await updateUserRole(userId, newRole); fetchUsers(); } catch (err) { alert('Failed to update role.'); } };
+    const handleDeleteUser = async (userId) => { if (!window.confirm('PERMANENTLY delete this user?')) return; try { await deleteUser(userId); fetchUsers(); } catch (err) { alert(err.response?.data?.detail || 'Failed to delete user.'); } };
+    
+    if (loading) return <div>Loading user data...</div>;
+    return (
+        <div className="bg-card border border-border shadow-lg rounded-lg overflow-x-auto animate-fade-in">
+            <table className="min-w-full leading-normal">
+                <thead><tr><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">User</th><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">Role</th><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">Actions</th></tr></thead>
+                <tbody>
+                    {users.map((user) => (
+                        <tr key={user.id}>
+                            <td className="px-5 py-5 border-b border-border text-sm"><p className="font-semibold text-primary">{user.full_name}</p><p className="text-secondary">{user.email}</p></td>
+                            <td className="px-5 py-5 border-b border-border text-sm">
+                                <select value={user.role} onChange={(e) => handleRoleChange(user.id, e.target.value)} className="p-2 border border-border rounded-md bg-background text-primary">
+                                    <option value="student">Student</option><option value="club_admin">Club Admin</option><option value="super_admin">Super Admin</option>
+                                </select>
+                            </td>
+                            <td className="px-5 py-5 border-b border-border text-sm"><button onClick={() => handleDeleteUser(user.id)} className="text-red-500 hover:text-red-400"><Trash size={18}/></button></td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+// Panel 3: Club Oversight
+const ClubOversightPanel = () => {
+    const [clubs, setClubs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const fetchClubs = useCallback(async () => { setLoading(true); try { const response = await getAllClubs(); setClubs(response.data); } catch (err) { console.error("Failed to fetch clubs", err); } finally { setLoading(false); } }, []);
+    useEffect(() => { fetchClubs(); }, [fetchClubs]);
+    const handleDeleteClub = async (clubId) => { if (window.confirm('Are you sure you want to delete this club?')) { try { await deleteClub(clubId); alert('Club deleted successfully.'); fetchClubs(); } catch (error) { alert('Failed to delete club.'); } } };
+    
+    if (loading) return <div>Loading clubs...</div>;
+    return (
+        <div className="bg-card border border-border shadow-lg rounded-lg overflow-x-auto animate-fade-in">
+            <table className="min-w-full leading-normal">
+                <thead><tr><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">Club Name</th><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">Admin</th><th className="px-5 py-3 border-b-2 border-border bg-background text-left text-xs font-semibold text-secondary uppercase">Actions</th></tr></thead>
+                <tbody>
+                    {clubs.map((club) => (
+                        <tr key={club.id}>
+                            <td className="px-5 py-5 border-b border-border text-sm"><p className="font-semibold text-primary">{club.name}</p></td>
+                            <td className="px-5 py-5 border-b border-border text-sm"><p className="text-secondary">{club.admin.full_name}</p></td>
+                            <td className="px-5 py-5 border-b border-border text-sm flex space-x-4">
+                                <Link to={`/clubs/${club.id}/edit`} className="text-accent hover:text-accent-hover" title="Edit Club"><Edit size={18}/></Link>
+                                <button onClick={() => handleDeleteClub(club.id)} className="text-red-500 hover:text-red-400" title="Delete Club"><Trash size={18}/></button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+// --- Main Super Admin Dashboard Component ---
+const SuperAdminDashboard = () => {
+    const [activeTab, setActiveTab] = useState('overview');
+    const getTabClass = (tabName) => `px-4 py-2 font-semibold rounded-lg transition flex items-center ${activeTab === tabName ? 'bg-accent text-white shadow' : 'text-secondary hover:bg-border'}`;
 
     return (
         <div className="space-y-8">
-            <div className="flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-                    <p className="text-gray-500 mt-1">Monitor and manage the entire CampusConnect platform.</p>
-                </div>
-                <div className="flex space-x-2">
-                    <button className="flex items-center bg-red-100 text-red-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-200"><ShieldAlert size={16} className="mr-2"/> System Alerts</button>
-                    <button className="flex items-center bg-blue-100 text-blue-700 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-200"><Settings size={16} className="mr-2"/> System Settings</button>
-                </div>
+            <div>
+                <h1 className="text-4xl font-bold text-primary">Super Admin Dashboard</h1>
+                <p className="text-secondary mt-1">Monitor and manage the entire StellarHub platform.</p>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Users" value={stats?.total_users || 0} change="+156 this week" icon={Users} color="blue" />
-                <StatCard title="Active Clubs" value={stats?.active_clubs || 0} change="+2 pending" icon={TentTree} color="green" />
-                <StatCard title="Total Events" value={stats?.total_events || 0} change="23 this month" icon={CalendarDays} color="purple" />
-                <StatCard title="System Health" value="98.5%" change="All systems operational" icon={HeartPulse} color="teal" />
+            <div className="bg-card border border-border p-2 rounded-lg flex space-x-2">
+                <button onClick={() => setActiveTab('overview')} className={getTabClass('overview')}><LayoutDashboard size={16} className="mr-2"/> Overview</button>
+                <button onClick={() => setActiveTab('userManagement')} className={getTabClass('userManagement')}><UserCog size={16} className="mr-2"/> User Management</button>
+                <button onClick={() => setActiveTab('clubOversight')} className={getTabClass('clubOversight')}><ShieldCheck size={16} className="mr-2"/> Club Oversight</button>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-bold text-gray-800">Pending Club Approvals</h2>
-                        <div className="mt-4 space-y-4">
-                            <div className="border p-4 rounded-lg flex justify-between items-center">
-                                <div>
-                                    <p className="font-bold">Robotics Club</p>
-                                    <p className="text-sm text-gray-500">Requested by: Dr. Sarah Johnson</p>
-                                </div>
-                                <div className="flex space-x-2">
-                                    <button className="p-2 rounded-full bg-green-100 text-green-600 hover:bg-green-200"><CheckCircle size={20}/></button>
-                                    <button className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200"><AlertTriangle size={20}/></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-lg shadow-md">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">System Management</h2>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <Link to="/admin/user-management" className="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 text-center">
-                                <UserCog className="h-8 w-8 text-blue-600 mb-2"/>
-                                <span className="font-semibold text-sm text-blue-800">User Management</span>
-                            </Link>
-                            <Link to="/admin/club-oversight" className="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg hover:bg-green-100 text-center">
-                                <ShieldCheck className="h-8 w-8 text-green-600 mb-2"/>
-                                <span className="font-semibold text-sm text-green-800">Club Oversight</span>
-                            </Link>
-                            <button className="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 text-center"><BarChart2 className="h-8 w-8 text-purple-600 mb-2"/><span className="font-semibold text-sm text-purple-800">Analytics</span></button>
-                            <button className="flex flex-col items-center justify-center p-4 bg-orange-50 rounded-lg hover:bg-orange-100 text-center"><Settings className="h-8 w-8 text-orange-600 mb-2"/><span className="font-semibold text-sm text-orange-800">System Config</span></button>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white p-6 rounded-lg shadow-md">
-                    <h2 className="text-xl font-bold text-gray-800">System Alerts</h2>
-                    <div className="mt-4 space-y-4">
-                        <AlertItem title="High Server Load" description="Server load is at 85%. Consider scaling." time="10 minutes ago" icon={AlertTriangle} color="yellow" />
-                        <AlertItem title="Backup Completed" description="Daily database backup completed successfully." time="2 hours ago" icon={CheckCircle} color="blue" />
-                        <AlertItem title="Security Scan" description="Weekly scan completed with no issues found." time="1 day ago" icon={Scan} color="green" />
-                    </div>
-                </div>
+            <div className="mt-6">
+                {activeTab === 'overview' && <OverviewPanel setActiveTab={setActiveTab} />}
+                {activeTab === 'userManagement' && <UserManagementPanel />}
+                {activeTab === 'clubOversight' && <ClubOversightPanel />}
             </div>
         </div>
     );

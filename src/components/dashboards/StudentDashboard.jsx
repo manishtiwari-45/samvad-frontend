@@ -1,7 +1,26 @@
 import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ScanFace, CheckCircle } from 'lucide-react'; // ScanFace aur CheckCircle import karein
+import { ArrowRight, ScanFace, CheckCircle, User, TentTree, Calendar } from 'lucide-react';
+
+// Card component ko naye dark theme colors ke saath update kiya gaya hai
+const DashboardCard = ({ to, icon, title, children }) => (
+    <div className="bg-card border border-border p-6 rounded-xl shadow-lg flex flex-col transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50">
+        <div className="flex-grow">
+            <h2 className="text-xl font-bold text-primary flex items-center mb-3">
+                {icon}
+                {title}
+            </h2>
+            <div className="text-secondary text-sm">
+                {children}
+            </div>
+        </div>
+        <Link to={to} className="flex items-center mt-6 text-accent font-semibold hover:text-accent-hover group">
+            {title === "My Profile" ? "Go to Profile" : `Explore ${title}`}
+            <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
+        </Link>
+    </div>
+);
 
 const StudentDashboard = () => {
     const { user } = useAuth();
@@ -9,79 +28,65 @@ const StudentDashboard = () => {
     if (!user) return <div>Loading dashboard...</div>;
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 animate-fade-in">
             <div>
-                <h1 className="text-3xl font-bold text-gray-900">Welcome, {user.full_name.split(' ')[0]}!</h1>
-                <p className="text-gray-500 mt-1">Here's a quick overview of your activities.</p>
+                <h1 className="text-4xl font-bold text-primary">Welcome, {user.full_name.split(' ')[0]}!</h1>
+                <p className="text-secondary mt-1">Here's a quick overview of your activities and opportunities.</p>
             </div>
             
-            {/* Grid ko 2-column layout mein badla gaya hai */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* My Clubs Card */}
-                <div className="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">My Clubs</h2>
+                <DashboardCard to="/clubs" icon={<TentTree className="mr-3 text-green-500"/>} title="My Clubs">
                     {user.clubs && user.clubs.length > 0 ? (
                         <div>
-                            <p className="text-gray-600">You are a member of <span className="font-bold">{user.clubs.length}</span> club(s).</p>
-                            <ul className="mt-4 space-y-2">
-                            {user.clubs.slice(0, 3).map(club => (
-                                <li key={club.id}><Link to={`/clubs/${club.id}`} className="text-sm font-semibold text-gray-700 hover:text-indigo-600">{club.name}</Link></li>
+                            <p>You are a member of <span className="font-bold text-primary">{user.clubs.length}</span> club(s).</p>
+                            <ul className="mt-3 space-y-2 list-disc list-inside">
+                            {user.clubs.slice(0, 2).map(club => (
+                                <li key={club.id}><Link to={`/clubs/${club.id}`} className="hover:text-accent">{club.name}</Link></li>
                             ))}
                             </ul>
                         </div>
                     ) : (
-                        <p className="text-gray-500">You haven't joined any clubs yet.</p>
+                        <p>You haven't joined any clubs yet.</p>
                     )}
-                    <Link to="/clubs" className="flex items-center mt-6 text-indigo-600 font-semibold hover:underline">
-                        Explore All Clubs <ArrowRight size={16} className="ml-2" />
-                    </Link>
-                </div>
+                </DashboardCard>
 
                 {/* My Events Card */}
-                <div className="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">My Events</h2>
+                <DashboardCard to="/events" icon={<Calendar className="mr-3 text-purple-500"/>} title="My Events">
                     {user.events_attending && user.events_attending.length > 0 ? (
                         <div>
-                        <p className="text-gray-600">You are registered for <span className="font-bold">{user.events_attending.length}</span> event(s).</p>
-                            <ul className="mt-4 space-y-2">
-                            {user.events_attending.slice(0, 3).map(event => (
-                                <li key={event.id} className="text-sm font-semibold text-gray-700">{event.name}</li> 
+                        <p>You are registered for <span className="font-bold text-primary">{user.events_attending.length}</span> event(s).</p>
+                            <ul className="mt-3 space-y-2 list-disc list-inside">
+                            {user.events_attending.slice(0, 2).map(event => (
+                                <li key={event.id}>{event.name}</li> 
                             ))}
                             </ul>
                         </div>
                     ) : (
-                        <p className="text-gray-500">You haven't registered for any events.</p>
+                        <p>You haven't registered for any events.</p>
                     )}
-                    <Link to="/events" className="flex items-center mt-6 text-indigo-600 font-semibold hover:underline">
-                        Discover More Events <ArrowRight size={16} className="ml-2" />
-                    </Link>
-                </div>
+                </DashboardCard>
 
-                {/* Profile Card */}
-                <div className="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800">My Profile</h2>
-                    <p className="text-gray-500">View your detailed profile, achievements, and activity.</p>
-                    <Link to="/profile" className="flex items-center mt-6 text-indigo-600 font-semibold hover:underline">
-                        Go to My Profile <ArrowRight size={16} className="ml-2" />
-                    </Link>
-                </div>
+                {/* My Profile Card */}
+                <DashboardCard to="/profile" icon={<User className="mr-3 text-blue-500"/>} title="My Profile">
+                    <p>View your detailed profile, achievements, activity, and goals.</p>
+                </DashboardCard>
                 
-                {/* --- NAYA AI ATTENDANCE CARD --- */}
-                <div className="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-800 flex items-center">
-                    <ScanFace size={22} className="mr-3 text-indigo-600" /> AI Attendance
+                {/* AI Attendance Card */}
+                <div className="bg-card border border-border p-6 rounded-xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 hover:border-accent/50">
+                    <h2 className="text-xl font-bold text-primary flex items-center mb-3">
+                    <ScanFace size={22} className="mr-3 text-accent" /> AI Attendance
                     </h2>
                     {user.face_encoding ? (
-                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                            <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
-                            <p className="mt-2 font-semibold text-green-700">Your face is enrolled!</p>
-                            <p className="text-sm text-gray-500">You are ready for AI attendance.</p>
+                        <div className="text-center p-4 bg-green-900/50 border border-green-500/30 rounded-lg">
+                            <CheckCircle className="h-10 w-10 text-green-400 mx-auto" />
+                            <p className="mt-2 font-semibold text-green-300">Your face is enrolled!</p>
                         </div>
                     ) : (
                         <>
-                            <p className="text-gray-500">Enroll your face once to use our AI-powered attendance system for all events.</p>
-                            <Link to="/enroll-face" className="flex items-center mt-6 text-indigo-600 font-semibold hover:underline">
-                                Enroll Your Face <ArrowRight size={16} className="ml-2" />
+                            <p className="text-secondary text-sm">Enroll your face to use our AI-powered attendance system for all events.</p>
+                            <Link to="/enroll-face" className="flex items-center mt-6 text-accent font-semibold hover:text-accent-hover group">
+                                Enroll Your Face <ArrowRight size={16} className="ml-2 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </>
                     )}

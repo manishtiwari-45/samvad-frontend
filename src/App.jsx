@@ -9,8 +9,6 @@ import ClubDetailPage from './pages/ClubDetailPage';
 import EditClubPage from './pages/EditClubPage';
 import DiscoverEventsPage from './pages/DiscoverEventsPage';
 import ProfilePage from './pages/ProfilePage';
-import UserManagementPage from './pages/UserManagementPage';
-import ClubOversightPage from './pages/ClubOversightPage';
 import GalleryPage from './pages/GalleryPage';
 import EnrollFacePage from './pages/EnrollFacePage';
 import LiveAttendancePage from './pages/LiveAttendancePage'; // Nayi file import karein
@@ -44,10 +42,6 @@ function App() {
 
                 {/* Naya, single Admin AI Feature Route */}
                 <Route path="/attendance/live" element={<LiveAttendancePage />} />
-
-                {/* Admin Routes */}
-                <Route path="/admin/user-management" element={<UserManagementPage />} />
-                <Route path="/admin/club-oversight" element={<ClubOversightPage />} />
                 
                 {/* Default Route */}
                 <Route path="/" element={<Navigate to="/dashboard" />} />
