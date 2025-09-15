@@ -54,7 +54,7 @@ const Footer = () => {
                         &copy; 2025 StellarHub. All rights reserved.
                     </p>
                     <p className="mt-4 md:mt-0 md:order-2 text-base text-secondary">
-                        Developed by <span className="font-semibold text-accent">Manish Tiwari</span>
+                        Developed by <span className="font-semibold text-accent">Team Mind Coders</span>
                     </p>
                 </div>
             </div>

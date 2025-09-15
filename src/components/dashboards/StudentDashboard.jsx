@@ -2,6 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ScanFace, CheckCircle, User, TentTree, Calendar } from 'lucide-react';
+import Chatbot from '../common/Chatbot'; // Import the new Chatbot component
 
 // Card component ko naye dark theme colors ke saath update kiya gaya hai
 const DashboardCard = ({ to, icon, title, children }) => (
@@ -92,6 +93,9 @@ const StudentDashboard = () => {
                     )}
                 </div>
             </div>
+            
+            {/* Add the Chatbot component here */}
+            <Chatbot />
         </div>
     );
 };
