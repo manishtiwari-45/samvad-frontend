@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getClubById, updateClub } from '../services/api';
-import Header from '../components/Header';
+import { clubApi } from '../services/api';
 
 const EditClubPage = () => {
     const { clubId } = useParams();
@@ -14,7 +13,7 @@ const EditClubPage = () => {
     useEffect(() => {
         const fetchClub = async () => {
             try {
-                const response = await getClubById(clubId);
+                const response = await clubApi.getById(clubId);
                 setName(response.data.name);
                 setDescription(response.data.description);
                 setLoading(false);
@@ -29,7 +28,7 @@ const EditClubPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await updateClub(clubId, { name, description });
+            await clubApi.update(clubId, { name, description });
             alert('Club updated successfully!');
             navigate('/dashboard');
         } catch (err) {
@@ -40,8 +39,7 @@ const EditClubPage = () => {
     if (loading) return <div>Loading...</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <Header />
+        <div className="min-h-screen bg-background">
             <main className="container mx-auto px-6 py-8">
                 <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg">
                     <h1 className="text-2xl font-bold text-gray-800 mb-6">Edit Club</h1>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getGalleryPhotos, uploadToGallery, deleteGalleryPhoto } from '../services/api';
+import { photoApi } from '../services/api';
 import { Plus, Camera, Loader2, X, Trash2 } from 'lucide-react';
 
 // A simple, self-contained Modal component for the upload form
@@ -68,7 +68,7 @@ const GalleryPage = () => {
         try {
             setError('');
             setLoading(true);
-            const response = await getGalleryPhotos();
+            const response = await photoApi.getGallery();
             setPhotos(response.data);
         } catch (err) {
             setError('Failed to fetch photos. Please try again later.');
@@ -84,7 +84,7 @@ const GalleryPage = () => {
     const handleUpload = async (file, caption) => {
         try {
             setLoading(true);
-            const response = await uploadToGallery(file, caption);
+            const response = await photoApi.uploadToGallery(file, caption);
             setPhotos([response.data, ...photos]); // Add new photo to the top of the list
             setIsModalOpen(false);
         } catch (err) {
@@ -98,7 +98,7 @@ const GalleryPage = () => {
         if (!window.confirm('Are you sure you want to delete this photo?')) return;
         
         try {
-            await deleteGalleryPhoto(photoId);
+            await photoApi.deleteFromGallery(photoId);
             setPhotos(photos.filter(p => p.id !== photoId)); // Remove photo from state
         } catch (err) {
             alert('Delete failed: ' + (err.response?.data?.detail || 'Please try again.'));

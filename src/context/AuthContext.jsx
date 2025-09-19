@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { loginUser, fetchCurrentUser } from '../services/api'; // Import loginUser
+import { authApi } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
         if (token) {
-            fetchCurrentUser()
+            authApi.getCurrentUser()
                 .then(response => {
                     setUser(response.data);
                 })
@@ -29,14 +29,16 @@ export const AuthProvider = ({ children }) => {
     const login = async (credentials) => {
         // The component no longer needs to do this work.
         // The context handles everything.
-        const response = await loginUser(credentials);
+        const response = await authApi.login(credentials);
         const token = response.data.access_token;
         localStorage.setItem('accessToken', token);
         
         // The interceptor will automatically use the new token for this call
-        const userResponse = await fetchCurrentUser();
+        const userResponse = await authApi.getCurrentUser();
         setUser(userResponse.data);
-        // This function can be awaited in the component
+        
+        // Return user data for role-based redirection
+        return userResponse.data;
     };
 
     const logout = () => {
@@ -46,8 +48,12 @@ export const AuthProvider = ({ children }) => {
         window.location.href = '/auth';
     };
 
+    const setUserData = (userData) => {
+        setUser(userData);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, loading, setUser: setUserData }}>
             {children}
         </AuthContext.Provider>
     );

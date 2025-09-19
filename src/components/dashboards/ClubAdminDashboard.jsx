@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createClub, getMyClubs, getClubById, uploadEventPhoto, createAnnouncement } from '../../services/api';
+import { clubApi, authApi, photoApi, announcementApi } from '../../services/api';
 import { Link } from 'react-router-dom';
 import { PlusCircleIcon, Users, Calendar, Camera, Loader2, ArrowRight, TentTree, Video, Edit, ChevronDown, Megaphone, UploadCloud } from 'lucide-react';
 import Modal from '../Modal';
@@ -15,7 +15,7 @@ const PhotoUploadForm = ({ eventId, onUploadSuccess }) => {
         if (!file) { alert("Please select a file first."); return; }
         setIsUploading(true);
         try {
-            await uploadEventPhoto(eventId, file);
+            await photoApi.uploadForEvent(eventId, file);
             alert("Photo uploaded successfully!");
             setFile(null);
             if (onUploadSuccess) onUploadSuccess();
@@ -46,7 +46,7 @@ const EventsManager = ({ clubId }) => {
     useEffect(() => {
         const fetchEvents = async () => {
             try {
-                const response = await getClubById(clubId);
+                const response = await clubApi.getById(clubId);
                 setEvents(response.data.events);
             } catch (error) { console.error("Failed to fetch events for admin", error); } 
             finally { setLoading(false); }
@@ -118,7 +118,7 @@ const CreateClubForm = ({ onClubCreated }) => {
         }
         setLoading(true);
         try {
-            await createClub({ name, description, file: coverPhoto });
+            await clubApi.create({ name, description, file: coverPhoto });
             alert('Club created successfully!');
             setName(''); 
             setDescription('');
@@ -184,7 +184,7 @@ const ClubAdminDashboard = ({...props}) => {
     const fetchManagedClubs = useCallback(async () => {
         setIsLoading(true);
         try {
-            const response = await getMyClubs();
+            const response = await authApi.getMyClubs();
             setManagedClubs(response.data);
         } catch (error) { console.error("Failed to fetch managed clubs", error); } 
         finally { setIsLoading(false); }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { createClub, getAllUsers } from '../../services/api'; // Import getAllUsers
+import { clubApi, adminApi } from '../../services/api';
 import { Loader2, ArrowLeft, UploadCloud, Info, Link, Mail, Calendar, User as UserIcon } from 'lucide-react';
 
 const CreateClubPage = () => {
@@ -34,7 +34,7 @@ const CreateClubPage = () => {
         if (user && user.role === 'super_admin') {
             const fetchUsers = async () => {
                 try {
-                    const response = await getAllUsers();
+                    const response = await adminApi.getAllUsers();
                     setUsers(response.data);
                 } catch (err) {
                     console.error("Failed to fetch users:", err);
@@ -75,7 +75,7 @@ const CreateClubPage = () => {
         };
 
         try {
-            await createClub(clubData);
+            await clubApi.create(clubData);
             alert('Club created successfully!');
             navigate('/clubs'); // Redirect to the clubs list
         } catch (err) {

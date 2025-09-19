@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { createEvent, getMyClubs, getAllClubs } from '../../services/api';
+import { eventApi, authApi, clubApi } from '../../services/api';
 import { Loader2, ArrowLeft, Calendar, MapPin } from 'lucide-react';
 
 const CreateEventPage = () => {
@@ -33,10 +33,10 @@ const CreateEventPage = () => {
                 let response;
                 if (user.role === 'super_admin') {
                     // Super admin can create events for any club
-                    response = await getAllClubs();
+                    response = await clubApi.getAll();
                 } else {
                     // Club admin can only create events for their clubs
-                    response = await getMyClubs();
+                    response = await authApi.getMyClubs();
                 }
                 setManagedClubs(response.data);
                 // Pre-select the first club if available
@@ -65,7 +65,7 @@ const CreateEventPage = () => {
         const eventData = { name, description, date, location };
 
         try {
-            await createEvent(clubId, eventData);
+            await eventApi.create(clubId, eventData);
             alert('Event created successfully!');
             navigate('/events'); // Redirect to the events list
         } catch (err) {

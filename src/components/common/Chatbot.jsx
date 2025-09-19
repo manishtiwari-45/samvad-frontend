@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getChatbotResponse } from '../../services/api'; // Import the new API function
+import { aiApi } from '../../services/api'; // Import the AI API functions
 import { MessageSquare, X, Send, Bot, User, Loader2 } from 'lucide-react';
 
 const Chatbot = () => {
@@ -33,7 +33,7 @@ const Chatbot = () => {
 
         try {
             // --- Real Gemini API call ---
-            const response = await getChatbotResponse(input, messages);
+            const response = await aiApi.getChatbotResponse(input, messages);
             const botResponse = { from: 'bot', text: response.data.response };
             setMessages(prev => [...prev, botResponse]);
         } catch (error) {

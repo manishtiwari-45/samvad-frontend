@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { enrollFace } from '../services/api';
+import { authApi } from '../services/api';
 import { Camera, Upload, Loader2 } from 'lucide-react';
 
 const EnrollFacePage = () => {
@@ -63,7 +63,7 @@ const EnrollFacePage = () => {
             setIsEnrolling(true);
             setMessage('Enrolling your face... Please wait.');
             try {
-                await enrollFace(blob);
+                await authApi.enrollFace(blob);
                 setMessage('Enrollment Successful! You can now use AI attendance.');
                 setCapturedImage(null); // Reset after success
             } catch (err) {

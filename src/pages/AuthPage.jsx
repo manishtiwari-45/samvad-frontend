@@ -1,263 +1,778 @@
-// AuthPage.jsx - Standalone version with mocks for compatibility
-
-import React, { useState, createContext, useContext } from 'react';
-// import { useNavigate } from 'react-router-dom';
-// import { useGoogleLogin } from '@react-oauth/google';
-// import { useAuth } from '../context/AuthContext'; 
-// import { authApi, verificationApi } from '../services/api'; 
-
-import { Loader2, Sparkles, Eye, EyeOff } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from '../context/AuthContext';
+import { authApi, verificationApi } from '../services/api';
+import { Loader2, Eye, EyeOff, ArrowLeft, ArrowRight, Sparkles, Mail, Lock, User, CheckCircle, AlertCircle, Star, Users, Calendar, Phone, UserCheck } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 
-// --- MOCK IMPLEMENTATIONS to make component runnable in isolation ---
-// In your real project, you would remove these and use the actual imports above.
-const useNavigate = () => (path) => console.log(`Navigating to: ${path}`);
-const useAuth = () => ({
-    login: (token, user) => console.log('AuthContext Login called with:', { token, user })
-});
-const useGoogleLogin = ({ onSuccess, onError }) => {
-    return () => {
-        console.log("Google Login Hook Triggered");
-        try {
-            // Simulate a successful login
-            onSuccess({ access_token: 'mock_google_token' });
-        } catch (error) {
-            onError(error);
-        }
-    };
-};
-const authApi = {
-    login: (credentials) => Promise.resolve({ data: { access_token: 'mock_jwt_token' } }),
-    loginWithGoogle: (token) => Promise.resolve({ data: { access_token: 'mock_jwt_from_google' } }),
-    getCurrentUser: () => Promise.resolve({ data: { name: 'Mock User', email: 'user@sitare.org' } }),
-    signup: (userData) => Promise.resolve({ data: { message: 'Signup successful' } }),
-};
-const verificationApi = {
-    sendOtp: (number) => Promise.resolve({ data: { message: `OTP sent to ${number}` } }),
-    verifyOtp: (otp) => Promise.resolve({ data: { message: `OTP ${otp} verified` } }),
-};
-// --- End of Mock Implementations ---
+// Mock implementations removed - using real imports now
 
 
-// --- A little style for our modern look ---
-const PageStyles = () => (
-    <style>{`
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .form-container-animate { animation: slideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
-    `}</style>
-);
-
-// --- Google Icon SVG ---
+// Google Icon SVG
 const GoogleIcon = (props) => (
-    <svg className="w-5 h-5 mr-3" viewBox="0 0 48 48" {...props}>
-        <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039L38.802 6.84C34.553 2.964 29.615 1 24 1C10.745 1 0 11.745 0 25s10.745 24 24 24s24-10.745 24-24c0-1.341-.138-2.65-.389-3.917z"></path><path fill="#FF3D00" d="M6.306 14.691c-1.645 3.118-2.306 6.643-2.306 10.309c0 3.666.661 7.191 2.306 10.309l-5.344 4.14C.603 34.936 0 30.136 0 25c0-5.136.603-9.936 1.962-14.45L6.306 14.691z"></path><path fill="#4CAF50" d="M24 48c5.636 0 10.731-1.746 14.691-4.834l-5.04-3.912C30.56 41.875 27.464 43 24 43c-4.773 0-8.814-2.556-10.82-6.161l-5.53 4.27C10.51 44.225 16.71 48 24 48z"></path><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.447-2.233 4.562-4.243 6.159l5.04 3.912C41.345 34.613 44 29.836 44 24c0-1.341-.138-2.65-.389-3.917z"></path>
+    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" {...props}>
+        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"></path>
+        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"></path>
+        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"></path>
+        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"></path>
     </svg>
 );
 
-// --- Reusable UI Components ---
-const LoginForm = ({ email, setEmail, password, setPassword, handleLogin, handleGoogleLoginClick, loading, error, showPassword, setShowPassword }) => (
-    <form onSubmit={handleLogin} className="space-y-6">
-         <div>
-            <label className="text-sm font-medium text-gray-300">Email address</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300" required />
-        </div>
-        <div className="relative">
-            <label className="text-sm font-medium text-gray-300">Password</label>
-            <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300" required />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-9 text-gray-400 hover:text-white transition-colors">
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-        </div>
-        {error && <p className="text-red-400 text-sm text-center font-semibold">{error}</p>}
-        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 shadow-lg shadow-purple-900/40">
-            {loading ? <Loader2 className="animate-spin"/> : 'Sign In'}
-        </button>
-        <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-gray-600"></div><span className="flex-shrink mx-4 text-gray-400 text-xs font-semibold">OR</span><div className="flex-grow border-t border-gray-600"></div>
-        </div>
-        <button type="button" onClick={handleGoogleLoginClick} disabled={loading} className="w-full flex items-center justify-center py-3 px-4 rounded-lg border border-gray-600 bg-gray-700/40 hover:bg-gray-700/80 font-semibold text-white transition-all duration-300 transform hover:scale-105 disabled:opacity-50">
-           <GoogleIcon /> Sign In with Google
-        </button>
-    </form>
-);
+// Role Selector Component
+const RoleSelector = ({ value, onChange, label = "Select your role" }) => {
+    const roles = [
+        { value: 'student', label: 'Student', icon: User, description: 'Join clubs and attend events' },
+        { value: 'club_admin', label: 'Club Admin', icon: UserCheck, description: 'Manage club activities and events' },
+        { value: 'super_admin', label: 'Super Admin', icon: Star, description: 'Full system administration' }
+    ];
 
-const SignupDetailsForm = ({ fullName, setFullName, role, setRole, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, handleSendOtp, loading, error, showPassword, setShowPassword }) => (
-    <form onSubmit={handleSendOtp} className="space-y-4">
-        <input placeholder="Full Name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white" required />
-        <select value={role} onChange={(e) => setRole(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white">
-            <option value="student">Student</option>
-            <option value="club_admin">Club Admin</option>
-            <option value="super_admin">Super Admin</option>
-        </select>
-        <input placeholder="Email Address (@sitare.org)" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white" required />
-        <input placeholder="Password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white" required />
-        <input placeholder="WhatsApp Number (+91...)" type="tel" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-white" required />
-        <div className="flex items-center"><input id="consent" type="checkbox" checked={whatsappConsent} onChange={(e) => setWhatsappConsent(e.target.checked)} className="h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 rounded"/><label htmlFor="consent" className="ml-2 block text-sm text-gray-300">I agree to receive WhatsApp notifications.</label></div>
-        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-        <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 font-semibold disabled:opacity-50 transition-all duration-300 transform hover:scale-105">
-            {loading ? <Loader2 className="animate-spin"/> : 'Send Verification OTP'}
-        </button>
-    </form>
-);
+    return (
+        <motion.div 
+            className="space-y-3"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            <label className="block text-sm font-semibold text-primary mb-3">{label}</label>
+            <div className="grid gap-3">
+                {roles.map((role) => {
+                    const IconComponent = role.icon;
+                    return (
+                        <motion.label
+                            key={role.value}
+                            className={`relative flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                                value === role.value
+                                    ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10'
+                                    : 'border-border bg-background hover:border-accent/30 hover:bg-accent/5'
+                            }`}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                        >
+                            <input
+                                type="radio"
+                                name="role"
+                                value={role.value}
+                                checked={value === role.value}
+                                onChange={(e) => onChange(e.target.value)}
+                                className="sr-only"
+                            />
+                            <div className="flex items-center space-x-4 w-full">
+                                <div className={`p-2 rounded-xl ${
+                                    value === role.value ? 'bg-accent text-white' : 'bg-accent/10 text-accent'
+                                }`}>
+                                    <IconComponent size={20} />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="font-semibold text-primary">{role.label}</div>
+                                    <div className="text-sm text-secondary">{role.description}</div>
+                                </div>
+                                {value === role.value && (
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="w-5 h-5 bg-accent rounded-full flex items-center justify-center"
+                                    >
+                                        <CheckCircle size={16} className="text-white" />
+                                    </motion.div>
+                                )}
+                            </div>
+                        </motion.label>
+                    );
+                })}
+            </div>
+        </motion.div>
+    );
+};
 
-const OtpForm = ({ otp, setOtp, whatsappNumber, handleSignupAndVerify, loading, error }) => (
-    <div>
-        <h2 className="text-2xl font-bold text-center text-white">Verify Your Number</h2>
-        <p className="text-center text-gray-300 mt-2 mb-6">An OTP has been sent to {whatsappNumber}.</p>
-        <form onSubmit={handleSignupAndVerify} className="space-y-4">
-            <input placeholder="6-Digit OTP" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} className="mt-1 w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg text-center tracking-[.5em] text-white" maxLength="6" required />
-            {error && <p className="text-red-400 text-sm text-center">{error}</p>}
-            <button type="submit" disabled={loading} className="w-full flex justify-center py-3 px-4 rounded-lg text-white bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 font-semibold disabled:opacity-50 transition-all duration-300 transform hover:scale-105">
-                {loading ? <Loader2 className="animate-spin"/> : 'Create Account & Verify'}
-            </button>
+// Enhanced Input Field Component with modern styling
+const InputField = ({ icon: Icon, label, error, ...props }) => {
+    const [focused, setFocused] = useState(false);
+    
+    return (
+        <motion.div 
+            className="space-y-2"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+        >
+            <label className="block text-sm font-semibold text-primary">
+                {label}
+            </label>
+            <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                    <Icon className={`h-5 w-5 transition-all duration-300 ${
+                        error ? 'text-error' : focused ? 'text-accent scale-110' : 'text-secondary group-hover:text-accent'
+                    }`} />
+                </div>
+                <input
+                    {...props}
+                    onFocus={() => setFocused(true)}
+                    onBlur={() => setFocused(false)}
+                    className={`block w-full pl-12 pr-4 py-4 border-2 rounded-2xl bg-background shadow-sm placeholder-secondary/60 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all duration-300 text-primary font-medium ${
+                        error 
+                            ? 'border-error focus:border-error shadow-error/10' 
+                            : focused
+                            ? 'border-accent shadow-accent/10 bg-accent/5'
+                            : 'border-border hover:border-accent/50 hover:shadow-md'
+                    }`}
+                />
+                {props.type === 'password' && (
+                    <button
+                        type="button"
+                        onClick={props.onTogglePassword}
+                        className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 text-secondary hover:text-accent transition-colors duration-200"
+                    >
+                        {props.showPassword ? (
+                            <EyeOff className="h-5 w-5" />
+                        ) : (
+                            <Eye className="h-5 w-5" />
+                        )}
+                    </button>
+                )}
+                {/* Floating border effect */}
+                <div className={`absolute inset-0 rounded-2xl border-2 border-transparent bg-gradient-to-r from-accent/20 to-accent-light/20 opacity-0 transition-opacity duration-300 pointer-events-none ${
+                    focused ? 'opacity-100' : ''
+                }`} />
+            </div>
+            <AnimatePresence>
+                {error && (
+                    <motion.div 
+                        className="flex items-center space-x-2 text-error text-sm font-medium"
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        transition={{ duration: 0.2 }}
+                    >
+                        <AlertCircle className="h-4 w-4" />
+                        <span>{error}</span>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
+
+// Enhanced Modern Button Component
+const Button = ({ children, variant = 'primary', loading = false, ...props }) => {
+    const baseClasses = "w-full flex items-center justify-center px-6 py-4 rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 transform active:scale-95";
+    const variants = {
+        primary: "bg-gradient-to-r from-accent via-accent to-accent-hover text-white hover:from-accent-hover hover:to-accent-dark focus:ring-accent/30 shadow-lg hover:shadow-xl hover:shadow-accent/25 hover:-translate-y-1",
+        secondary: "bg-background border-2 border-border text-primary hover:bg-background-secondary hover:border-accent/50 focus:ring-accent/20 shadow-sm hover:shadow-md",
+        google: "bg-white border-2 border-border text-primary hover:bg-background-secondary hover:border-accent/30 focus:ring-accent/20 shadow-sm hover:shadow-lg"
+    };
+    
+    return (
+        <motion.button
+            {...props}
+            disabled={loading || props.disabled}
+            className={`${baseClasses} ${variants[variant]} ${loading || props.disabled ? 'opacity-50 cursor-not-allowed transform-none' : ''}`}
+            whileHover={{ scale: loading || props.disabled ? 1 : 1.02 }}
+            whileTap={{ scale: loading || props.disabled ? 1 : 0.98 }}
+        >
+            {loading ? (
+                <>
+                    <Loader2 className="animate-spin mr-3 h-5 w-5" />
+                    <span>Loading...</span>
+                </>
+            ) : (
+                children
+            )}
+        </motion.button>
+    );
+};
+
+// Enhanced Login Form Component
+const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, handleLogin, handleGoogleLoginClick, loading, error, showPassword, setShowPassword, switchToSignup, fieldErrors = {} }) => (
+    <motion.div 
+        className="space-y-8"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 20 }}
+        transition={{ duration: 0.4 }}
+    >
+        <div className="text-center space-y-2">
+            <motion.h2 
+                className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+            >
+                Welcome back
+            </motion.h2>
+            <motion.p 
+                className="text-lg text-secondary font-medium"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+            >
+                Sign in to your StellarHub account
+            </motion.p>
+        </div>
+
+        <AnimatePresence>
+            {error && (
+                <motion.div 
+                    className="bg-error/5 border border-error/20 rounded-2xl p-4"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <div className="flex items-center">
+                        <AlertCircle className="h-5 w-5 text-error mr-3" />
+                        <p className="text-error font-medium">{error}</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        <form onSubmit={handleLogin} className="space-y-6">
+            <InputField
+                icon={Mail}
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                error={fieldErrors.email}
+                required
+            />
+
+            <InputField
+                icon={Lock}
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                showPassword={showPassword}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                error={fieldErrors.password}
+                required
+            />
+
+            <RoleSelector 
+                value={role} 
+                onChange={setRole} 
+                label="Login as"
+            />
+
+            <div className="flex items-center justify-between">
+                <motion.div 
+                    className="flex items-center"
+                    whileHover={{ scale: 1.02 }}
+                >
+                    <input
+                        id="remember-me"
+                        name="remember-me"
+                        type="checkbox"
+                        className="h-4 w-4 text-accent focus:ring-accent border-border rounded transition-colors"
+                    />
+                    <label htmlFor="remember-me" className="ml-3 block text-sm text-primary font-medium">
+                        Remember me
+                    </label>
+                </motion.div>
+                <Link 
+                    to="/forgot-password" 
+                    className="text-sm text-accent hover:text-accent-hover font-semibold transition-colors duration-200"
+                >
+                    Forgot password?
+                </Link>
+            </div>
+
+            <Button type="submit" loading={loading}>
+                <span className="flex items-center">
+                    Sign In
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                </span>
+            </Button>
         </form>
-    </div>
+
+        <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-background text-secondary font-medium">Or continue with</span>
+            </div>
+        </div>
+
+        <Button variant="google" onClick={handleGoogleLoginClick}>
+            <GoogleIcon />
+            <span>Sign in with Google</span>
+        </Button>
+
+        <div className="text-center pt-4">
+            <p className="text-secondary">
+                Don't have an account?{' '}
+                <button
+                    type="button"
+                    onClick={switchToSignup}
+                    className="font-semibold text-accent hover:text-accent-hover transition-colors duration-200"
+                >
+                    Sign up
+                </button>
+            </p>
+        </div>
+    </motion.div>
 );
 
+// Enhanced Signup Form Component
+const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, role, setRole, handleSignup, loading, error, showPassword, setShowPassword, switchToLogin, fieldErrors = {} }) => (
+    <motion.div 
+        className="space-y-8"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ duration: 0.4 }}
+    >
+        <div className="text-center space-y-2">
+            <motion.h2 
+                className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+            >
+                Create your account
+            </motion.h2>
+            <motion.p 
+                className="text-lg text-secondary font-medium"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+            >
+                Join the StellarHub community
+            </motion.p>
+        </div>
+
+        <AnimatePresence>
+            {error && (
+                <motion.div 
+                    className="bg-error/5 border border-error/20 rounded-2xl p-4"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <div className="flex items-center">
+                        <AlertCircle className="h-5 w-5 text-error mr-3" />
+                        <p className="text-error font-medium">{error}</p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        <form onSubmit={handleSignup} className="space-y-6">
+            <InputField
+                icon={User}
+                label="Full Name"
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
+                error={fieldErrors.fullName}
+                required
+            />
+
+            <InputField
+                icon={Mail}
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                error={fieldErrors.email}
+                required
+            />
+
+            <InputField
+                icon={Lock}
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a strong password"
+                showPassword={showPassword}
+                onTogglePassword={() => setShowPassword(!showPassword)}
+                error={fieldErrors.password}
+                required
+            />
+
+            <InputField
+                icon={Phone}
+                label="WhatsApp Number (Optional)"
+                type="tel"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                placeholder="Enter your WhatsApp number"
+                error={fieldErrors.whatsappNumber}
+            />
+
+            <RoleSelector 
+                value={role} 
+                onChange={setRole} 
+                label="Sign up as"
+            />
+
+            <motion.div 
+                className="flex items-center space-y-4 flex-col"
+                whileHover={{ scale: 1.02 }}
+            >
+                <div className="flex items-center w-full">
+                    <input
+                        id="whatsapp-consent"
+                        name="whatsapp-consent"
+                        type="checkbox"
+                        checked={whatsappConsent}
+                        onChange={(e) => setWhatsappConsent(e.target.checked)}
+                        className="h-4 w-4 text-accent focus:ring-accent border-border rounded transition-colors"
+                    />
+                    <label htmlFor="whatsapp-consent" className="ml-3 block text-sm text-primary font-medium">
+                        I consent to receive WhatsApp notifications for events and updates
+                    </label>
+                </div>
+                <div className="flex items-center w-full">
+                    <input
+                        id="terms"
+                        name="terms"
+                        type="checkbox"
+                        className="h-4 w-4 text-accent focus:ring-accent border-border rounded transition-colors"
+                        required
+                    />
+                    <label htmlFor="terms" className="ml-3 block text-sm text-primary font-medium">
+                        I agree to the{' '}
+                        <Link to="/terms" className="text-accent hover:text-accent-hover font-semibold">
+                            Terms of Service
+                        </Link>{' '}
+                        and{' '}
+                        <Link to="/privacy" className="text-accent hover:text-accent-hover font-semibold">
+                            Privacy Policy
+                        </Link>
+                    </label>
+                </div>
+            </motion.div>
+
+            <Button type="submit" loading={loading}>
+                <span className="flex items-center">
+                    Create Account
+                    <CheckCircle className="ml-2 h-5 w-5" />
+                </span>
+            </Button>
+        </form>
+
+        <div className="text-center pt-4">
+            <p className="text-secondary">
+                Already have an account?{' '}
+                <button
+                    type="button"
+                    onClick={switchToLogin}
+                    className="font-semibold text-accent hover:text-accent-hover transition-colors duration-200"
+                >
+                    Sign in
+                </button>
+            </p>
+        </div>
+    </motion.div>
+);
 
 const AuthPage = () => {
-    // --- State Management ---
-    const [isLogin, setIsLogin] = useState(true);
-    const [signupStep, setSignupStep] = useState('details');
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { login } = useAuth();
+    
+    // Get mode from URL query params or default to 'login'
+    const searchParams = new URLSearchParams(location.search);
+    const [mode, setMode] = useState(searchParams.get('mode') || 'login');
+    const isLogin = mode === 'login';
+    
+    // Form states
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
-    const [role, setRole] = useState('student');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [whatsappConsent, setWhatsappConsent] = useState(false);
-    const [otp, setOtp] = useState('');
+    const [role, setRole] = useState('student');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    
-    // --- Hooks ---
-    const { login } = useAuth();
-    const navigate = useNavigate();
 
-    // --- Handlers ---
-    const handleLogin = async (e) => { 
-        e.preventDefault(); 
-        setLoading(true); 
-        setError('');
-        try { 
-            const response = await authApi.login({ email, password }); 
-            const token = response.data.access_token;
-            localStorage.setItem('accessToken', token); 
-            const userResponse = await authApi.getCurrentUser(); 
-            login(token, userResponse.data); 
-            navigate('/dashboard'); 
-        } catch (err) { 
-            setError(err.message || 'Login failed. Please check your credentials.'); 
-        } finally { 
-            setLoading(false); 
+    // Update URL when mode changes
+    useEffect(() => {
+        const params = new URLSearchParams();
+        if (mode !== 'login') {
+            params.set('mode', mode);
         }
-    };
+        navigate({ search: params.toString() }, { replace: true });
+    }, [mode, navigate]);
 
-    const handleGoogleSuccess = async (tokenResponse) => { 
-        setLoading(true); 
-        setError('');
-        try { 
-            const response = await authApi.loginWithGoogle(tokenResponse.access_token); 
-            const token = response.data.access_token;
-            localStorage.setItem('accessToken', token); 
-            const userResponse = await authApi.getCurrentUser(); 
-            login(token, userResponse.data); 
-            navigate('/dashboard'); 
-        } catch (err) { 
-            setError(err.message || 'Google Sign-In failed. Please try again.'); 
-        } finally { 
-            setLoading(false); 
-        }
-    };
-    
-    const handleGoogleError = (err) => {
-        console.error("Google Login Error:", err);
-        setError('Google authentication failed. The popup might have been closed.');
-    };
-    
-    const googleLogin = useGoogleLogin({ onSuccess: handleGoogleSuccess, onError: handleGoogleError });
-    
-    const handleSendOtp = async (e) => { 
-        e.preventDefault(); 
-        setLoading(true); 
-        setError('');
-        try { 
-            if (!email.endsWith('@sitare.org')) {
-                throw new Error("Only @sitare.org emails are allowed for signup.");
+    // Handle Google Login
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                setLoading(true);
+                const response = await authApi.loginWithGoogle(tokenResponse.access_token, role);
+                
+                if (response.data.access_token) {
+                    localStorage.setItem('accessToken', response.data.access_token);
+                    const userResponse = await authApi.getCurrentUser();
+                    login(userResponse.data);
+                    
+                    // Role-based redirection
+                    const redirectPath = getRoleBasedRedirect(userResponse.data.role);
+                    navigate(redirectPath, { replace: true });
+                }
+            } catch (err) {
+                setError(err.message || 'Failed to login with Google');
+            } finally {
+                setLoading(false);
             }
-            await verificationApi.sendOtp(whatsappNumber); 
-            setSignupStep('otp'); 
-        } catch (err) { 
-            setError(err.message || 'Failed to send OTP. Please check the number.'); 
-        } finally { 
-            setLoading(false); 
+        },
+        onError: (error) => {
+            console.error('Google Login Error:', error);
+            setError('Failed to login with Google');
+        }
+    });
+
+    // Role-based redirect function
+    const getRoleBasedRedirect = (userRole) => {
+        switch (userRole) {
+            case 'super_admin':
+                return '/dashboard'; // Super admin dashboard
+            case 'club_admin':
+                return '/dashboard'; // Club admin dashboard
+            case 'student':
+            default:
+                return '/dashboard'; // Student dashboard
         }
     };
 
-    const handleSignupAndVerify = async (e) => { 
-        e.preventDefault(); 
-        setLoading(true); 
+    // Handle regular login
+    const handleLogin = async (e) => {
+        e.preventDefault();
         setError('');
-        try { 
-            await authApi.signup({ email, password, full_name: fullName, role, whatsapp_number: whatsappNumber, whatsapp_consent: whatsappConsent }); 
-            const loginResponse = await authApi.login({ email, password }); 
-            const token = loginResponse.data.access_token;
-            localStorage.setItem('accessToken', token); 
-            await verificationApi.verifyOtp(otp); 
-            const userResponse = await authApi.getCurrentUser(); 
-            login(token, userResponse.data); 
-            navigate('/dashboard'); 
-        } catch (err) { 
-            setError(err.message || 'Signup failed. OTP may be incorrect or user may already exist.'); 
-        } finally { 
-            setLoading(false); 
+        setLoading(true);
+
+        try {
+            const userData = await login({ email, password });
+            
+            // Role-based redirection
+            const redirectPath = getRoleBasedRedirect(userData.role || 'student');
+            navigate(redirectPath, { replace: true });
+        } catch (err) {
+            setError(err.message || 'Invalid email or password');
+        } finally {
+            setLoading(false);
         }
     };
 
-    const toggleForm = () => { 
-        setIsLogin(!isLogin); 
-        setSignupStep('details'); 
-        setError(''); 
+    // Handle signup
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        try {
+            await authApi.signup({
+                full_name: fullName,
+                email,
+                password,
+                role,
+                whatsapp_number: whatsappNumber || '',
+                whatsapp_consent: whatsappConsent
+            });
+            
+            // After successful signup, try to login
+            const userData = await login({ email, password });
+            
+            // Role-based redirection
+            const redirectPath = getRoleBasedRedirect(userData.role || role);
+            navigate(redirectPath, { replace: true });
+        } catch (err) {
+            setError(err.message || 'Failed to create account');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const formKey = isLogin ? 'login' : signupStep;
+    const switchToSignup = () => setMode('signup');
+    const switchToLogin = () => setMode('login');
 
     return (
-        <>
-            <PageStyles />
-            <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4 font-sans bg-gradient-to-br from-[#10111a] via-[#10111a] to-[#1c1d2e] overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,250,0.05)_0%,_rgba(255,255,255,0)_60%)]"></div>
-                <div className="w-full max-w-md space-y-8 z-10 form-container-animate">
-                    <div className="text-center">
-                        <div className="inline-block p-4 bg-gray-800/60 border border-gray-700 rounded-xl shadow-lg">
-                            <Sparkles className="h-8 w-8 text-purple-400" />
+        <div className="min-h-screen bg-gradient-to-br from-background via-background-secondary to-background-tertiary flex">
+            {/* Left Side - Branding & Features */}
+            <motion.div 
+                className="hidden lg:flex lg:flex-1 relative overflow-hidden"
+                initial={{ opacity: 0, x: -50 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+            >
+                {/* Background Pattern */}
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent-light/5 to-transparent" />
+                <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] opacity-30" />
+                
+                <div className="relative flex flex-col justify-center px-12 py-16">
+                    {/* Logo */}
+                    <motion.div 
+                        className="mb-12"
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <div className="flex items-center space-x-4">
+                            <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent-hover rounded-2xl flex items-center justify-center shadow-lg">
+                                <Sparkles className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-primary">StellarHub</h1>
+                                <p className="text-secondary font-medium">Campus Community Platform</p>
+                            </div>
                         </div>
-                        <h1 className="text-4xl font-bold text-white mt-4 tracking-tight">
-                            {isLogin ? "Welcome Back" : "Join StellarHub"}
-                        </h1>
-                        <p className="text-gray-400 mt-2">
-                            {isLogin ? "Sign in to access your universe" : "Create an account to get started"}
-                        </p>
-                    </div>
-                    <div key={formKey} className="bg-gray-800/40 border border-gray-700 rounded-2xl p-8 shadow-2xl shadow-black/30 backdrop-blur-lg form-container-animate">
-                        {isLogin ? (
-                            <LoginForm {...{ email, setEmail, password, setPassword, handleLogin, loading, error, showPassword, setShowPassword }} handleGoogleLoginClick={() => googleLogin()} />
-                        ) : signupStep === 'details' ? (
-                            <SignupDetailsForm {...{ fullName, setFullName, role, setRole, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, handleSendOtp, loading, error, showPassword, setShowPassword }} />
-                        ) : (
-                            <OtpForm {...{ otp, setOtp, whatsappNumber, handleSignupAndVerify, loading, error }} />
-                        )}
-                    </div>
-                    <p className="text-center text-sm text-gray-400">
-                        {isLogin ? "Don't have an account?" : 'Already have an account?'}
-                        <button onClick={toggleForm} className="font-semibold text-purple-400 hover:text-purple-300 ml-2 transition-colors duration-300">
-                            {isLogin ? 'Sign up' : 'Sign in'}
-                        </button>
-                    </p>
+                    </motion.div>
+
+                    {/* Features */}
+                    <motion.div 
+                        className="space-y-8"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                    >
+                        <div>
+                            <h2 className="text-4xl font-bold text-primary mb-6 leading-tight">
+                                Connect, Engage,{' '}
+                                <span className="bg-gradient-to-r from-accent to-accent-hover bg-clip-text text-transparent">
+                                    Thrive
+                                </span>
+                            </h2>
+                            <p className="text-xl text-secondary leading-relaxed">
+                                Join your campus community and discover opportunities that matter to you.
+                            </p>
+                        </div>
+
+                        <div className="space-y-6">
+                            {[
+                                { icon: Users, title: 'Join Clubs', desc: 'Connect with like-minded students' },
+                                { icon: Calendar, title: 'Attend Events', desc: 'Never miss important activities' },
+                                { icon: Star, title: 'Build Network', desc: 'Create lasting relationships' }
+                            ].map((feature, index) => (
+                                <motion.div 
+                                    key={feature.title}
+                                    className="flex items-start space-x-4"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.6 + index * 0.1 }}
+                                >
+                                    <div className="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <feature.icon className="h-5 w-5 text-accent" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-primary">{feature.title}</h3>
+                                        <p className="text-secondary text-sm">{feature.desc}</p>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+            </motion.div>
+
+            {/* Right Side - Auth Form */}
+            <div className="flex-1 lg:max-w-lg xl:max-w-xl flex items-center justify-center p-8">
+                <div className="w-full max-w-md">
+                    {/* Back to Home Button */}
+                    <motion.div 
+                        className="mb-8"
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <Link 
+                            to="/" 
+                            className="inline-flex items-center text-secondary hover:text-accent transition-colors duration-200 font-medium"
+                        >
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Home
+                        </Link>
+                    </motion.div>
+
+                    {/* Mobile Logo */}
+                    <motion.div 
+                        className="lg:hidden text-center mb-8"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent to-accent-hover rounded-2xl mb-4 shadow-lg">
+                            <Sparkles className="h-8 w-8 text-white" />
+                        </div>
+                        <h1 className="text-2xl font-bold text-primary mb-2">StellarHub</h1>
+                        <p className="text-secondary font-medium">Your campus community platform</p>
+                    </motion.div>
+
+                    {/* Auth Form Container */}
+                    <motion.div 
+                        className="bg-card rounded-3xl shadow-2xl border border-border p-8 backdrop-blur-sm"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <AnimatePresence mode="wait">
+                            {isLogin ? (
+                                <LoginForm 
+                                    key="login"
+                                    email={email}
+                                    setEmail={setEmail}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    role={role}
+                                    setRole={setRole}
+                                    handleLogin={handleLogin}
+                                    handleGoogleLoginClick={handleGoogleLogin}
+                                    loading={loading}
+                                    error={error}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    switchToSignup={switchToSignup}
+                                />
+                            ) : (
+                                <SignupForm 
+                                    key="signup"
+                                    fullName={fullName}
+                                    setFullName={setFullName}
+                                    email={email}
+                                    setEmail={setEmail}
+                                    password={password}
+                                    setPassword={setPassword}
+                                    whatsappNumber={whatsappNumber}
+                                    setWhatsappNumber={setWhatsappNumber}
+                                    whatsappConsent={whatsappConsent}
+                                    setWhatsappConsent={setWhatsappConsent}
+                                    role={role}
+                                    setRole={setRole}
+                                    handleSignup={handleSignup}
+                                    loading={loading}
+                                    error={error}
+                                    showPassword={showPassword}
+                                    setShowPassword={setShowPassword}
+                                    switchToLogin={switchToLogin}
+                                />
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+
+                    {/* Footer */}
+                    <motion.div 
+                        className="mt-8 text-center text-sm text-secondary"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                    >
+                        <p>&copy; 2024 StellarHub. All rights reserved.</p>
+                    </motion.div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { getDashboardStats, getAllUsers, updateUserRole, deleteUser, getAllClubs, deleteClub } from '../../services/api';
+import { adminApi, clubApi } from '../../services/api';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Users, TentTree, CalendarDays, HeartPulse, Trash, Edit, LayoutDashboard, UserCog, ShieldCheck } from 'lucide-react';
@@ -12,7 +12,7 @@ const OverviewPanel = ({ setActiveTab }) => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await getDashboardStats();
+                const response = await adminApi.getDashboardStats();
                 setStats(response.data);
             } catch (error) { console.error("Failed to fetch dashboard stats", error); } 
             finally { setLoading(false); }
@@ -82,10 +82,10 @@ const UserManagementPanel = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const { user: currentUser } = useAuth();
-    const fetchUsers = useCallback(async () => { setLoading(true); try { const response = await getAllUsers(); setUsers(response.data); } catch (err) { console.error('Failed to fetch users.'); } finally { setLoading(false); } }, []);
+    const fetchUsers = useCallback(async () => { setLoading(true); try { const response = await adminApi.getAllUsers(); setUsers(response.data); } catch (err) { console.error('Failed to fetch users.'); } finally { setLoading(false); } }, []);
     useEffect(() => { fetchUsers(); }, [fetchUsers]);
-    const handleRoleChange = async (userId, newRole) => { if (!window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return; try { await updateUserRole(userId, newRole); fetchUsers(); } catch (err) { alert('Failed to update role.'); } };
-    const handleDeleteUser = async (userId) => { if (!window.confirm('Are you sure you want to PERMANENTLY delete this user?')) return; try { await deleteUser(userId); fetchUsers(); } catch (err) { alert(err.response?.data?.detail || 'Failed to delete user.'); } };
+    const handleRoleChange = async (userId, newRole) => { if (!window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) return; try { await adminApi.updateUserRole(userId, newRole); fetchUsers(); } catch (err) { alert('Failed to update role.'); } };
+    const handleDeleteUser = async (userId) => { if (!window.confirm('Are you sure you want to PERMANENTLY delete this user?')) return; try { await adminApi.deleteUser(userId); fetchUsers(); } catch (err) { alert(err.response?.data?.detail || 'Failed to delete user.'); } };
     
     if (loading) return <div className="text-center text-secondary py-8">Loading user data...</div>;
     
@@ -115,9 +115,9 @@ const UserManagementPanel = () => {
 const ClubOversightPanel = () => {
     const [clubs, setClubs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const fetchClubs = useCallback(async () => { setLoading(true); try { const response = await getAllClubs(); setClubs(response.data); } catch (err) { console.error("Failed to fetch clubs", err); } finally { setLoading(false); } }, []);
+    const fetchClubs = useCallback(async () => { setLoading(true); try { const response = await clubApi.getAll(); setClubs(response.data); } catch (err) { console.error("Failed to fetch clubs", err); } finally { setLoading(false); } }, []);
     useEffect(() => { fetchClubs(); }, [fetchClubs]);
-    const handleDeleteClub = async (clubId) => { if (window.confirm('Are you sure you want to delete this club?')) { try { await deleteClub(clubId); alert('Club deleted successfully.'); fetchClubs(); } catch (error) { alert('Failed to delete club.'); } } };
+    const handleDeleteClub = async (clubId) => { if (window.confirm('Are you sure you want to delete this club?')) { try { await clubApi.delete(clubId); alert('Club deleted successfully.'); fetchClubs(); } catch (error) { alert('Failed to delete club.'); } } };
     
     if (loading) return <div className="text-center text-secondary py-8">Loading clubs...</div>;
     return (

@@ -62,7 +62,7 @@ export const authApi = {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
     },
-    loginWithGoogle: (googleToken) => apiClient.post('/users/google-login', { token: googleToken }),
+    loginWithGoogle: (googleToken, role = 'student') => apiClient.post('/users/google-login', { token: googleToken, role }),
     getCurrentUser: () => apiClient.get('/users/me'),
     getMyClubs: () => apiClient.get('/users/me/administered-clubs'),
     enrollFace: (imageBlob) => {
@@ -111,6 +111,7 @@ export const clubApi = {
 // ============================================================================
 export const eventApi = {
     getAll: () => apiClient.get('/events/'),
+    getById: (eventId) => apiClient.get(`/events/${eventId}`),
     create: (clubId, eventData) => apiClient.post(`/events/?club_id=${clubId}`, eventData),
     register: (eventId) => apiClient.post(`/events/${eventId}/register`),
     getRecommendations: () => apiClient.get('/events/recommendations'),
