@@ -150,7 +150,7 @@ const SuperAdminDashboard = () => {
         <div className="space-y-8">
             <div>
                 <h1 className="text-4xl font-bold text-primary">Super Admin Dashboard</h1>
-                <p className="text-secondary mt-1">Monitor and manage the entire StellarHub platform.</p>
+                <p className="text-secondary mt-1">Monitor and manage the entire StarHive platform.</p>
             </div>
             <div className="bg-card border border-border p-2 rounded-lg flex space-x-2">
                 <button onClick={() => setActiveTab('overview')} className={getTabClass('overview')}><LayoutDashboard size={16} className="mr-2"/> Overview</button>

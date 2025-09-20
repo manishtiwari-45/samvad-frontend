@@ -77,7 +77,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                                 exit={{ opacity: 0, width: 0 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <h1 className="text-xl font-bold text-primary">StellarHub</h1>
+                                <h1 className="text-xl font-bold text-primary">StarHive</h1>
                                 <p className="text-xs text-secondary font-medium">Campus Community</p>
                             </motion.div>
                         )}
@@ -552,7 +552,7 @@ const getPageTitle = (pathname) => {
     if (pathname.startsWith('/enroll-face')) return 'Face Enrollment';
     if (pathname.startsWith('/attendance/live')) return 'Live AI Attendance';
     if (pathname.startsWith('/dashboard')) return 'Dashboard';
-    return 'StellarHub';
+    return 'StarHive';
 };
 
 export default Layout;

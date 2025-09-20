@@ -164,9 +164,3 @@ export const adminApi = {
     getDashboardStats: () => apiClient.get('/admin/stats'),
 };
 
-// ============================================================================
-// --- 🤖 AI Services API ---
-// ============================================================================
-export const aiApi = {
-    getChatbotResponse: (query, history) => apiClient.post('/ai/chatbot', { query, history }),
-};

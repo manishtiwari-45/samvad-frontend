@@ -42,9 +42,9 @@ const EventDetailPage = () => {
         location: ['Main Auditorium', 'Tech Lab', 'Sports Complex', 'Library Hall', 'Online'][Math.floor(Math.random() * 5)],
         organizer: {
             name: 'Tech Club',
-            email: 'tech@stellarhub.edu',
+            email: 'tech@starhive.edu',
             phone: '+91 98765 43210',
-            website: 'https://techclub.stellarhub.edu'
+            website: 'https://techclub.starhive.edu'
         },
         rating: (4 + Math.random()).toFixed(1),
         isPopular: Math.random() > 0.7,

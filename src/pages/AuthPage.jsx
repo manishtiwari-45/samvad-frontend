@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { authApi, verificationApi } from '../services/api';
-import { Loader2, Eye, EyeOff, ArrowLeft, ArrowRight, Sparkles, Mail, Lock, User, CheckCircle, AlertCircle, Star, Users, Calendar, Phone, UserCheck } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ArrowLeft, ArrowRight, Hexagon, Mail, Lock, User, CheckCircle, AlertCircle, Star, Users, Calendar, Phone, UserCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 
@@ -35,14 +35,14 @@ const RoleSelector = ({ value, onChange, label = "Select your role" }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <label className="block text-sm font-semibold text-primary mb-3">{label}</label>
+            <label className="block text-base font-semibold text-primary mb-4">{label}</label>
             <div className="grid gap-3">
                 {roles.map((role) => {
                     const IconComponent = role.icon;
                     return (
                         <motion.label
                             key={role.value}
-                            className={`relative flex items-center p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
+                            className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
                                 value === role.value
                                     ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10'
                                     : 'border-border bg-background hover:border-accent/30 hover:bg-accent/5'
@@ -59,14 +59,14 @@ const RoleSelector = ({ value, onChange, label = "Select your role" }) => {
                                 className="sr-only"
                             />
                             <div className="flex items-center space-x-4 w-full">
-                                <div className={`p-2 rounded-xl ${
+                                <div className={`p-3 rounded-xl ${
                                     value === role.value ? 'bg-accent text-white' : 'bg-accent/10 text-accent'
                                 }`}>
-                                    <IconComponent size={20} />
+                                    <IconComponent size={24} />
                                 </div>
                                 <div className="flex-1">
-                                    <div className="font-semibold text-primary">{role.label}</div>
-                                    <div className="text-sm text-secondary">{role.description}</div>
+                                    <div className="text-lg font-semibold text-primary">{role.label}</div>
+                                    <div className="text-base text-secondary">{role.description}</div>
                                 </div>
                                 {value === role.value && (
                                     <motion.div
@@ -92,17 +92,17 @@ const InputField = ({ icon: Icon, label, error, ...props }) => {
     
     return (
         <motion.div 
-            className="space-y-2"
+            className="space-y-3"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <label className="block text-sm font-semibold text-primary">
+            <label className="block text-base font-semibold text-primary">
                 {label}
             </label>
             <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                    <Icon className={`h-5 w-5 transition-all duration-300 ${
+                <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none z-10">
+                    <Icon className={`h-6 w-6 transition-all duration-300 ${
                         error ? 'text-error' : focused ? 'text-accent scale-110' : 'text-secondary group-hover:text-accent'
                     }`} />
                 </div>
@@ -110,7 +110,7 @@ const InputField = ({ icon: Icon, label, error, ...props }) => {
                     {...props}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
-                    className={`block w-full pl-12 pr-4 py-4 border-2 rounded-2xl bg-background shadow-sm placeholder-secondary/60 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all duration-300 text-primary font-medium ${
+                    className={`block w-full pl-14 pr-5 py-5 text-lg border-2 rounded-2xl bg-background shadow-sm placeholder-secondary/60 focus:outline-none focus:ring-4 focus:ring-accent/20 transition-all duration-300 text-primary font-medium ${
                         error 
                             ? 'border-error focus:border-error shadow-error/10' 
                             : focused
@@ -122,7 +122,7 @@ const InputField = ({ icon: Icon, label, error, ...props }) => {
                     <button
                         type="button"
                         onClick={props.onTogglePassword}
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center z-10 text-secondary hover:text-accent transition-colors duration-200"
+                        className="absolute inset-y-0 right-0 pr-5 flex items-center z-10 text-secondary hover:text-accent transition-colors duration-200"
                     >
                         {props.showPassword ? (
                             <EyeOff className="h-5 w-5" />
@@ -156,7 +156,7 @@ const InputField = ({ icon: Icon, label, error, ...props }) => {
 
 // Enhanced Modern Button Component
 const Button = ({ children, variant = 'primary', loading = false, ...props }) => {
-    const baseClasses = "w-full flex items-center justify-center px-6 py-4 rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 transform active:scale-95";
+    const baseClasses = "w-full flex items-center justify-center px-8 py-5 text-lg rounded-2xl font-semibold transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-offset-2 transform active:scale-95";
     const variants = {
         primary: "bg-gradient-to-r from-accent via-accent to-accent-hover text-white hover:from-accent-hover hover:to-accent-dark focus:ring-accent/30 shadow-lg hover:shadow-xl hover:shadow-accent/25 hover:-translate-y-1",
         secondary: "bg-background border-2 border-border text-primary hover:bg-background-secondary hover:border-accent/50 focus:ring-accent/20 shadow-sm hover:shadow-md",
@@ -186,15 +186,15 @@ const Button = ({ children, variant = 'primary', loading = false, ...props }) =>
 // Enhanced Login Form Component
 const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, handleLogin, handleGoogleLoginClick, loading, error, showPassword, setShowPassword, switchToSignup, fieldErrors = {} }) => (
     <motion.div 
-        className="space-y-8"
+        className="space-y-10"
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: 20 }}
         transition={{ duration: 0.4 }}
     >
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
             <motion.h2 
-                className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -202,12 +202,12 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
                 Welcome back
             </motion.h2>
             <motion.p 
-                className="text-lg text-secondary font-medium"
+                className="text-lg md:text-xl text-secondary font-medium"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                Sign in to your StellarHub account
+                Sign in to your StarHive account
             </motion.p>
         </div>
 
@@ -228,7 +228,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
             )}
         </AnimatePresence>
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={handleLogin} className="space-y-8">
             <InputField
                 icon={Mail}
                 label="Email Address"
@@ -322,15 +322,15 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
 // Enhanced Signup Form Component
 const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, role, setRole, handleSignup, loading, error, showPassword, setShowPassword, switchToLogin, fieldErrors = {} }) => (
     <motion.div 
-        className="space-y-8"
+        className="space-y-10"
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
         transition={{ duration: 0.4 }}
     >
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
             <motion.h2 
-                className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -338,12 +338,12 @@ const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassw
                 Create your account
             </motion.h2>
             <motion.p 
-                className="text-lg text-secondary font-medium"
+                className="text-lg md:text-xl text-secondary font-medium"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                Join the StellarHub community
+                Join the StarHive community
             </motion.p>
         </div>
 
@@ -364,7 +364,7 @@ const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassw
             )}
         </AnimatePresence>
 
-        <form onSubmit={handleSignup} className="space-y-6">
+        <form onSubmit={handleSignup} className="space-y-8">
             <InputField
                 icon={User}
                 label="Full Name"
@@ -612,7 +612,7 @@ const AuthPage = () => {
                 <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-accent-light/5 to-transparent" />
                 <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] opacity-30" />
                 
-                <div className="relative flex flex-col justify-center px-12 py-16">
+                <div className="relative flex flex-col justify-center px-12 py-16 lg:py-20">
                     {/* Logo */}
                     <motion.div 
                         className="mb-12"
@@ -621,12 +621,13 @@ const AuthPage = () => {
                         transition={{ delay: 0.2 }}
                     >
                         <div className="flex items-center space-x-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-accent to-accent-hover rounded-2xl flex items-center justify-center shadow-lg">
-                                <Sparkles className="h-6 w-6 text-white" />
+                            <div className="w-16 h-16 bg-gradient-to-br from-accent to-accent-hover rounded-2xl flex items-center justify-center shadow-lg relative">
+                                <Hexagon className="h-8 w-8 text-white absolute" />
+                                <Star className="h-4 w-4 text-white relative z-10" />
                             </div>
                             <div>
-                                <h1 className="text-3xl font-bold text-primary">StellarHub</h1>
-                                <p className="text-secondary font-medium">Campus Community Platform</p>
+                                <h1 className="text-4xl font-bold text-primary">StarHive</h1>
+                                <p className="text-lg text-secondary font-medium">Campus Community Platform</p>
                             </div>
                         </div>
                     </motion.div>
@@ -678,8 +679,8 @@ const AuthPage = () => {
             </motion.div>
 
             {/* Right Side - Auth Form */}
-            <div className="flex-1 lg:max-w-lg xl:max-w-xl flex items-center justify-center p-8">
-                <div className="w-full max-w-md">
+            <div className="flex-1 lg:max-w-2xl xl:max-w-3xl flex items-center justify-center p-8 lg:p-12">
+                <div className="w-full max-w-lg">
                     {/* Back to Home Button */}
                     <motion.div 
                         className="mb-8"
@@ -703,16 +704,17 @@ const AuthPage = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.2 }}
                     >
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-accent to-accent-hover rounded-2xl mb-4 shadow-lg">
-                            <Sparkles className="h-8 w-8 text-white" />
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-accent to-accent-hover rounded-2xl mb-6 shadow-lg relative">
+                            <Hexagon className="h-10 w-10 text-white absolute" />
+                            <Star className="h-5 w-5 text-white relative z-10" />
                         </div>
-                        <h1 className="text-2xl font-bold text-primary mb-2">StellarHub</h1>
-                        <p className="text-secondary font-medium">Your campus community platform</p>
+                        <h1 className="text-3xl font-bold text-primary mb-3">StarHive</h1>
+                        <p className="text-lg text-secondary font-medium">Your campus community platform</p>
                     </motion.div>
 
                     {/* Auth Form Container */}
                     <motion.div 
-                        className="bg-card rounded-3xl shadow-2xl border border-border p-8 backdrop-blur-sm"
+                        className="bg-card rounded-3xl shadow-2xl border border-border p-10 lg:p-12 backdrop-blur-sm"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
@@ -768,7 +770,7 @@ const AuthPage = () => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5 }}
                     >
-                        <p>&copy; 2024 StellarHub. All rights reserved.</p>
+                        <p>&copy; 2024 StarHive. All rights reserved.</p>
                     </motion.div>
                 </div>
             </div>

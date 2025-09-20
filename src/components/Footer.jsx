@@ -10,7 +10,7 @@ const Footer = () => {
                     {/* Logo and About Section */}
                     <div className="col-span-2 md:col-span-1">
                         <Link to="/dashboard" className="text-2xl font-bold text-primary flex items-center">
-                            <Sparkles size={28} className="mr-2 text-accent"/> StellarHub
+                            <Sparkles size={28} className="mr-2 text-accent"/> StarHive
                         </Link>
                         <p className="mt-4 text-secondary text-sm">
                             Aapke college clubs aur events ke liye ek centralized platform.
@@ -51,7 +51,7 @@ const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="mt-8 border-t border-border pt-8 md:flex md:items-center md:justify-between">
                     <p className="text-base text-secondary md:order-1">
-                        &copy; 2025 StellarHub. All rights reserved.
+                        &copy; 2025 StarHive. All rights reserved.
                     </p>
                     <p className="mt-4 md:mt-0 md:order-2 text-base text-secondary">
                         Developed by <span className="font-semibold text-accent">Team Mind Coders</span>

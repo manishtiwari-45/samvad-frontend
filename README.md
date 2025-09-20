@@ -1,4 +1,4 @@
-# 🌟 StellarHub Frontend
+# 🌟 StarHive Frontend
 
 A modern, responsive web application for campus community management built with React, Vite, and Tailwind CSS.
 
@@ -219,4 +219,4 @@ For support and questions:
 
 ---
 
-**Made with ❤️ by the StellarHub Team**
+**Made with ❤️ by the StarHive Team**

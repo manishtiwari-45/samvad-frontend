@@ -2,7 +2,6 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ScanFace, CheckCircle, User, TentTree, Calendar, Trophy, Target, BookOpen, Zap, Plus, Activity, Star, Users } from 'lucide-react';
-import Chatbot from '../common/Chatbot';
 
 // Enhanced Dashboard Card component
 const DashboardCard = ({ to, icon, title, children, className = "", stats = null }) => (
@@ -347,8 +346,6 @@ const StudentDashboard = () => {
                 </div>
             </div>
             
-            {/* Chatbot */}
-            <Chatbot />
         </div>
     );
 };

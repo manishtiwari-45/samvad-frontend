@@ -43,7 +43,7 @@ function App() {
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const hasGoogleClient = Boolean(googleClientId && String(googleClientId).trim());
 
-    if (loading) return <LoadingSpinner fullScreen size="lg" message="Loading StellarHub..." />;
+    if (loading) return <LoadingSpinner fullScreen size="lg" message="Loading StarHive..." />;
 
     return (
         <ErrorBoundary>

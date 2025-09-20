@@ -2,7 +2,7 @@
 const { execSync } = require('child_process');
 const path = require('path');
 
-console.log('Testing StellarHub Frontend Build...');
+console.log('Testing StarHive Frontend Build...');
 
 try {
     // Try to run the build command

@@ -82,7 +82,7 @@ const ClubDetailPage = () => {
                     }
                 ],
                 cover_image_url: `https://picsum.photos/seed/${clubId}/1200/400`,
-                contact_email: `club${clubId}@stellarhub.edu`,
+                contact_email: `club${clubId}@starhive.edu`,
                 website_url: null,
                 founded_date: '2023-01-01'
             };

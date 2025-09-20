@@ -1,8 +1,8 @@
-// StellarHub Application Verification Script
+// StarHive Application Verification Script
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 StellarHub Application Verification\n');
+console.log('🔍 StarHive Application Verification\n');
 
 // Check if all essential files exist
 const essentialFiles = [
@@ -97,14 +97,13 @@ if (allFilesExist) {
     console.log('Please check the missing files above');
 }
 
-console.log('\n🌟 StellarHub Features Available:');
+console.log('\n🌟 StarHive Features Available:');
 console.log('• Modern Landing Page');
 console.log('• Beautiful Authentication');
 console.log('• Role-based Dashboards');
 console.log('• Club Management');
 console.log('• Event System');
 console.log('• Photo Gallery');
-console.log('• AI Chatbot');
 console.log('• Face Enrollment');
 console.log('• Responsive Design');
 console.log('• Google OAuth Integration');
