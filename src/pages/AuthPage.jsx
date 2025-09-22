@@ -469,6 +469,7 @@ const AuthPage = () => {
         onSuccess: async (tokenResponse) => {
             try {
                 setLoading(true);
+                console.log('Google token response:', tokenResponse); // Debug logging
                 const response = await authApi.loginWithGoogle(tokenResponse.access_token);
                 
                 if (response.data.access_token) {
@@ -483,6 +484,8 @@ const AuthPage = () => {
                     navigate(redirectPath, { replace: true });
                 }
             } catch (err) {
+                console.error('Google login error details:', err);
+                console.error('Error response:', err.response?.data);
                 setError(SecureErrorHandler.handleAuthError(err));
             } finally {
                 setLoading(false);
