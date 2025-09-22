@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Bell, LayoutDashboard, TentTree, CalendarDays, LogOut, Camera, PanelLeftClose, PanelLeftOpen, User as UserIcon, Settings, Sparkles, ScanFace, Users, Plus } from 'lucide-react';
+import { Bell, LayoutDashboard, TentTree, CalendarDays, LogOut, Camera, PanelLeftClose, PanelLeftOpen, User as UserIcon, Settings, Sparkles, ScanFace, Users, Plus, MessageSquare } from 'lucide-react';
+import NotificationBell from './common/NotificationBell';
 import { motion, AnimatePresence } from 'framer-motion';
 import Footer from './Footer';
 
@@ -23,6 +24,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
         { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard', description: 'Overview & stats' },
         { path: '/clubs', icon: TentTree, label: 'Clubs', description: 'Discover & join' },
         { path: '/events', icon: CalendarDays, label: 'Events', description: 'Upcoming activities' },
+        { path: '/forums', icon: MessageSquare, label: 'Forums', description: 'Community discussions' },
         { path: '/gallery', icon: Camera, label: 'Gallery', description: 'Photo memories' },
     ];
 
@@ -77,7 +79,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                                 exit={{ opacity: 0, width: 0 }}
                                 transition={{ duration: 0.2 }}
                             >
-                                <h1 className="text-xl font-bold text-primary">StarHive</h1>
+                                <h1 className="text-xl font-bold text-primary">SAMVAD</h1>
                                 <p className="text-xs text-secondary font-medium">Campus Community</p>
                             </motion.div>
                         )}
@@ -298,86 +300,7 @@ const Header = ({ onSidebarToggle, isSidebarOpen }) => {
                     {/* Right Section */}
                     <div className="flex items-center space-x-2">
                         {/* Notifications */}
-                        <div className="relative" ref={notificationRef}>
-                            <motion.button 
-                                onClick={() => setShowNotifications(!showNotifications)}
-                                className="relative p-2 rounded-xl text-secondary hover:bg-card-hover hover:text-accent transition-all duration-200"
-                                aria-label="Notifications"
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                <Bell size={20} />
-                                <AnimatePresence>
-                                    {unreadCount > 0 && (
-                                        <motion.span 
-                                            className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-error to-error-hover text-white text-xs rounded-full flex items-center justify-center font-bold shadow-lg"
-                                            initial={{ scale: 0 }}
-                                            animate={{ scale: 1 }}
-                                            exit={{ scale: 0 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        >
-                                            {unreadCount}
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
-                            </motion.button>
-                            
-                            <AnimatePresence>
-                                {showNotifications && (
-                                    <motion.div 
-                                        className="absolute right-0 mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl py-2 z-50 backdrop-blur-xl"
-                                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                        transition={{ duration: 0.2, ease: "easeOut" }}
-                                    >
-                                        <div className="px-4 py-3 border-b border-border">
-                                            <h3 className="font-bold text-primary">Notifications</h3>
-                                            <p className="text-xs text-secondary font-medium">{unreadCount} unread</p>
-                                        </div>
-                                        <div className="max-h-64 overflow-y-auto scrollbar-hide">
-                                            {notifications.map((notification, index) => (
-                                                <motion.div 
-                                                    key={notification.id} 
-                                                    className={`px-4 py-3 hover:bg-card-hover transition-colors cursor-pointer border-l-2 ${
-                                                        notification.unread ? 'bg-accent/5 border-l-accent' : 'border-l-transparent'
-                                                    }`}
-                                                    initial={{ opacity: 0, x: -20 }}
-                                                    animate={{ opacity: 1, x: 0 }}
-                                                    transition={{ delay: index * 0.05 }}
-                                                    whileHover={{ x: 4 }}
-                                                >
-                                                    <div className="flex items-start space-x-3">
-                                                        <motion.div 
-                                                            className={`w-2 h-2 rounded-full mt-2 ${
-                                                                notification.unread ? 'bg-accent' : 'bg-transparent'
-                                                            }`}
-                                                            animate={notification.unread ? { scale: [1, 1.2, 1] } : {}}
-                                                            transition={{ duration: 2, repeat: Infinity }}
-                                                        />
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-sm font-semibold text-primary truncate">
-                                                                {notification.title}
-                                                            </p>
-                                                            <p className="text-xs text-secondary font-medium">{notification.time}</p>
-                                                        </div>
-                                                    </div>
-                                                </motion.div>
-                                            ))}
-                                        </div>
-                                        <div className="px-4 py-3 border-t border-border">
-                                            <motion.button 
-                                                className="text-xs text-accent hover:text-accent-hover font-semibold transition-colors"
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                            >
-                                                View all notifications
-                                            </motion.button>
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
+                        <NotificationBell />
 
                         {/* Profile Menu */}
                         <div className="relative" ref={profileMenuRef}>
@@ -552,7 +475,7 @@ const getPageTitle = (pathname) => {
     if (pathname.startsWith('/enroll-face')) return 'Face Enrollment';
     if (pathname.startsWith('/attendance/live')) return 'Live AI Attendance';
     if (pathname.startsWith('/dashboard')) return 'Dashboard';
-    return 'StarHive';
+    return 'SAMVAD';
 };
 
 export default Layout;

@@ -2,6 +2,7 @@ import React from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google'; 
 import { useAuth } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
@@ -17,6 +18,7 @@ import ProfilePage from './pages/ProfilePage';
 import GalleryPage from './pages/GalleryPage';
 import EnrollFacePage from './pages/EnrollFacePage';
 import LiveAttendancePage from './pages/LiveAttendancePage';
+import ForumsPage from './pages/ForumsPage';
 import CreateClubPage from './pages/admin/CreateClubPage';
 import CreateEventPage from './pages/admin/CreateEventPage';
 
@@ -43,10 +45,11 @@ function App() {
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const hasGoogleClient = Boolean(googleClientId && String(googleClientId).trim());
 
-    if (loading) return <LoadingSpinner fullScreen size="lg" message="Loading StarHive..." />;
+    if (loading) return <LoadingSpinner fullScreen size="lg" message="Loading SAMVAD..." />;
 
     return (
-        <ErrorBoundary>
+        <NotificationProvider>
+            <ErrorBoundary>
             {!hasGoogleClient && (
                 <div style={{
                     position: 'fixed',
@@ -81,6 +84,7 @@ function App() {
                             <Route path="/events" element={<DiscoverEventsPage />} />
                             <Route path="/events/:eventId" element={<EventDetailPage />} />
                             <Route path="/gallery" element={<GalleryPage />} />
+                            <Route path="/forums" element={<ForumsPage />} />
                             <Route path="/admin/clubs/create" element={<CreateClubPage />} />
                             <Route path="/events/create" element={<CreateEventPage />} />
                             <Route path="/enroll-face" element={<EnrollFacePage />} />
@@ -107,6 +111,7 @@ function App() {
                         <Route path="/events" element={<DiscoverEventsPage />} />
                         <Route path="/events/:eventId" element={<EventDetailPage />} />
                         <Route path="/gallery" element={<GalleryPage />} />
+                        <Route path="/forums" element={<ForumsPage />} />
                         <Route path="/admin/clubs/create" element={<CreateClubPage />} />
                         <Route path="/events/create" element={<CreateEventPage />} />
                         <Route path="/enroll-face" element={<EnrollFacePage />} />
@@ -117,7 +122,8 @@ function App() {
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             )}
-        </ErrorBoundary>
+            </ErrorBoundary>
+        </NotificationProvider>
     );
 }
 

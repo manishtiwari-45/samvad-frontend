@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { authApi, verificationApi } from '../services/api';
 import { Loader2, Eye, EyeOff, ArrowLeft, ArrowRight, Hexagon, Mail, Lock, User, CheckCircle, AlertCircle, Star, Users, Calendar, Phone, UserCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SecureErrorHandler from '../utils/errorHandler';
 
 
 // Mock implementations removed - using real imports now
@@ -20,67 +21,31 @@ const GoogleIcon = (props) => (
     </svg>
 );
 
-// Role Selector Component
-const RoleSelector = ({ value, onChange, label = "Select your role" }) => {
-    const roles = [
-        { value: 'student', label: 'Student', icon: User, description: 'Join clubs and attend events' },
-        { value: 'club_admin', label: 'Club Admin', icon: UserCheck, description: 'Manage club activities and events' },
-        { value: 'super_admin', label: 'Super Admin', icon: Star, description: 'Full system administration' }
-    ];
-
+// Security Notice Component - replaces role selector
+const SecurityNotice = () => {
     return (
         <motion.div 
-            className="space-y-3"
+            className="space-y-4 bg-accent/5 border border-accent/20 rounded-2xl p-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <label className="block text-base font-semibold text-primary mb-4">{label}</label>
-            <div className="grid gap-3">
-                {roles.map((role) => {
-                    const IconComponent = role.icon;
-                    return (
-                        <motion.label
-                            key={role.value}
-                            className={`relative flex items-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${
-                                value === role.value
-                                    ? 'border-accent bg-accent/5 shadow-lg shadow-accent/10'
-                                    : 'border-border bg-background hover:border-accent/30 hover:bg-accent/5'
-                            }`}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <input
-                                type="radio"
-                                name="role"
-                                value={role.value}
-                                checked={value === role.value}
-                                onChange={(e) => onChange(e.target.value)}
-                                className="sr-only"
-                            />
-                            <div className="flex items-center space-x-4 w-full">
-                                <div className={`p-3 rounded-xl ${
-                                    value === role.value ? 'bg-accent text-white' : 'bg-accent/10 text-accent'
-                                }`}>
-                                    <IconComponent size={24} />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="text-lg font-semibold text-primary">{role.label}</div>
-                                    <div className="text-base text-secondary">{role.description}</div>
-                                </div>
-                                {value === role.value && (
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="w-5 h-5 bg-accent rounded-full flex items-center justify-center"
-                                    >
-                                        <CheckCircle size={16} className="text-white" />
-                                    </motion.div>
-                                )}
-                            </div>
-                        </motion.label>
-                    );
-                })}
+            <div className="flex items-center space-x-3">
+                <div className="p-2 bg-accent/10 rounded-xl">
+                    <User className="h-5 w-5 text-accent" />
+                </div>
+                <div>
+                    <h3 className="text-lg font-semibold text-primary">Secure Registration</h3>
+                    <p className="text-sm text-secondary">Role assigned automatically based on your email</p>
+                </div>
+            </div>
+            <div className="text-sm text-secondary leading-relaxed">
+                <p className="mb-2">
+                    <strong className="text-primary">Most users:</strong> Get Student account by default. You can request Admin privileges from your dashboard after registration.
+                </p>
+                <p>
+                    <strong className="text-primary">Authorized admins:</strong> Whitelisted email addresses automatically get Super Admin access.
+                </p>
             </div>
         </motion.div>
     );
@@ -184,7 +149,7 @@ const Button = ({ children, variant = 'primary', loading = false, ...props }) =>
 };
 
 // Enhanced Login Form Component
-const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, handleLogin, handleGoogleLoginClick, loading, error, showPassword, setShowPassword, switchToSignup, fieldErrors = {} }) => (
+const LoginForm = ({ email, setEmail, password, setPassword, handleLogin, handleGoogleLoginClick, loading, error, showPassword, setShowPassword, switchToSignup, fieldErrors = {} }) => (
     <motion.div 
         className="space-y-10"
         initial={{ opacity: 0, x: -20 }}
@@ -207,7 +172,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                Sign in to your StarHive account
+                Sign in to your SAMVAD account
             </motion.p>
         </div>
 
@@ -253,11 +218,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
                 required
             />
 
-            <RoleSelector 
-                value={role} 
-                onChange={setRole} 
-                label="Login as"
-            />
+            <SecurityNotice />
 
             <div className="flex items-center justify-between">
                 <motion.div 
@@ -320,7 +281,7 @@ const LoginForm = ({ email, setEmail, password, setPassword, role, setRole, hand
 );
 
 // Enhanced Signup Form Component
-const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, role, setRole, handleSignup, loading, error, showPassword, setShowPassword, switchToLogin, fieldErrors = {} }) => (
+const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassword, whatsappNumber, setWhatsappNumber, whatsappConsent, setWhatsappConsent, handleSignup, loading, error, showPassword, setShowPassword, switchToLogin, fieldErrors = {} }) => (
     <motion.div 
         className="space-y-10"
         initial={{ opacity: 0, x: 20 }}
@@ -343,7 +304,7 @@ const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassw
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
             >
-                Join the StarHive community
+                Join the SAMVAD community
             </motion.p>
         </div>
 
@@ -410,11 +371,7 @@ const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassw
                 error={fieldErrors.whatsappNumber}
             />
 
-            <RoleSelector 
-                value={role} 
-                onChange={setRole} 
-                label="Sign up as"
-            />
+            <SecurityNotice />
 
             <motion.div 
                 className="flex items-center space-y-4 flex-col"
@@ -480,7 +437,7 @@ const SignupForm = ({ fullName, setFullName, email, setEmail, password, setPassw
 const AuthPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, setUser } = useAuth();
     
     // Get mode from URL query params or default to 'login'
     const searchParams = new URLSearchParams(location.search);
@@ -493,7 +450,7 @@ const AuthPage = () => {
     const [fullName, setFullName] = useState('');
     const [whatsappNumber, setWhatsappNumber] = useState('');
     const [whatsappConsent, setWhatsappConsent] = useState(false);
-    const [role, setRole] = useState('student');
+    // Role removed - all users are students by default for security
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
@@ -512,19 +469,21 @@ const AuthPage = () => {
         onSuccess: async (tokenResponse) => {
             try {
                 setLoading(true);
-                const response = await authApi.loginWithGoogle(tokenResponse.access_token, role);
+                const response = await authApi.loginWithGoogle(tokenResponse.access_token);
                 
                 if (response.data.access_token) {
                     localStorage.setItem('accessToken', response.data.access_token);
                     const userResponse = await authApi.getCurrentUser();
-                    login(userResponse.data);
+                    
+                    // Update auth context with user data
+                    setUser(userResponse.data);
                     
                     // Role-based redirection
                     const redirectPath = getRoleBasedRedirect(userResponse.data.role);
                     navigate(redirectPath, { replace: true });
                 }
             } catch (err) {
-                setError(err.message || 'Failed to login with Google');
+                setError(SecureErrorHandler.handleAuthError(err));
             } finally {
                 setLoading(false);
             }
@@ -561,7 +520,7 @@ const AuthPage = () => {
             const redirectPath = getRoleBasedRedirect(userData.role || 'student');
             navigate(redirectPath, { replace: true });
         } catch (err) {
-            setError(err.message || 'Invalid email or password');
+            setError(SecureErrorHandler.handleAuthError(err));
         } finally {
             setLoading(false);
         }
@@ -578,7 +537,6 @@ const AuthPage = () => {
                 full_name: fullName,
                 email,
                 password,
-                role,
                 whatsapp_number: whatsappNumber || '',
                 whatsapp_consent: whatsappConsent
             });
@@ -586,11 +544,11 @@ const AuthPage = () => {
             // After successful signup, try to login
             const userData = await login({ email, password });
             
-            // Role-based redirection
-            const redirectPath = getRoleBasedRedirect(userData.role || role);
+            // Role-based redirection (all new users are students)
+            const redirectPath = getRoleBasedRedirect(userData.role || 'student');
             navigate(redirectPath, { replace: true });
         } catch (err) {
-            setError(err.message || 'Failed to create account');
+            setError(SecureErrorHandler.handleApiError(err, 'signup'));
         } finally {
             setLoading(false);
         }
@@ -626,7 +584,7 @@ const AuthPage = () => {
                                 <Star className="h-4 w-4 text-white relative z-10" />
                             </div>
                             <div>
-                                <h1 className="text-4xl font-bold text-primary">StarHive</h1>
+                                <h1 className="text-4xl font-bold text-primary">SAMVAD</h1>
                                 <p className="text-lg text-secondary font-medium">Campus Community Platform</p>
                             </div>
                         </div>
@@ -708,7 +666,7 @@ const AuthPage = () => {
                             <Hexagon className="h-10 w-10 text-white absolute" />
                             <Star className="h-5 w-5 text-white relative z-10" />
                         </div>
-                        <h1 className="text-3xl font-bold text-primary mb-3">StarHive</h1>
+                        <h1 className="text-3xl font-bold text-primary mb-3">SAMVAD</h1>
                         <p className="text-lg text-secondary font-medium">Your campus community platform</p>
                     </motion.div>
 
@@ -727,8 +685,6 @@ const AuthPage = () => {
                                     setEmail={setEmail}
                                     password={password}
                                     setPassword={setPassword}
-                                    role={role}
-                                    setRole={setRole}
                                     handleLogin={handleLogin}
                                     handleGoogleLoginClick={handleGoogleLogin}
                                     loading={loading}
@@ -750,8 +706,6 @@ const AuthPage = () => {
                                     setWhatsappNumber={setWhatsappNumber}
                                     whatsappConsent={whatsappConsent}
                                     setWhatsappConsent={setWhatsappConsent}
-                                    role={role}
-                                    setRole={setRole}
                                     handleSignup={handleSignup}
                                     loading={loading}
                                     error={error}
@@ -770,7 +724,7 @@ const AuthPage = () => {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5 }}
                     >
-                        <p>&copy; 2024 StarHive. All rights reserved.</p>
+                        <p>&copy; 2024 SAMVAD. All rights reserved.</p>
                     </motion.div>
                 </div>
             </div>

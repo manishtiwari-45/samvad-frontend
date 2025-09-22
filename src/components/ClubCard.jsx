@@ -3,15 +3,12 @@ import { Link } from 'react-router-dom';
 import { Users, ArrowRight, Star, Calendar } from 'lucide-react';
 
 const ClubCard = ({ club }) => {
-    // Generate some dummy data for enhanced display
-    const dummyData = {
-        memberCount: Math.floor(Math.random() * 200) + 50,
-        category: ['Technology', 'Arts', 'Sports', 'Academic', 'Social'][Math.floor(Math.random() * 5)],
-        rating: (4 + Math.random()).toFixed(1),
-        upcomingEvents: Math.floor(Math.random() * 5) + 1,
-        imageUrl: `https://picsum.photos/seed/${club.id}/400/200`,
-        isActive: Math.random() > 0.3,
-    };
+    // Use real club data with fallbacks
+    const clubImageUrl = club.cover_image_url || `https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400&h=200&fit=crop&crop=center`;
+    const memberCount = club.members?.length || 0;
+    const eventCount = club.events?.length || 0;
+    const clubCategory = club.category || 'General';
+    const isActive = true; // Assume all clubs are active unless specified otherwise
 
     const getCategoryColor = (category) => {
         const colors = {
@@ -33,7 +30,7 @@ const ClubCard = ({ club }) => {
             <div className="relative h-48 overflow-hidden">
                 <img 
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                    src={dummyData.imageUrl} 
+                    src={clubImageUrl} 
                     alt={`${club.name} cover`}
                     loading="lazy"
                 />
@@ -42,17 +39,17 @@ const ClubCard = ({ club }) => {
                 {/* Status indicator */}
                 <div className="absolute top-3 left-3">
                     <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
-                        dummyData.isActive ? 'bg-success/20 text-success' : 'bg-secondary/20 text-secondary'
+                        isActive ? 'bg-success/20 text-success' : 'bg-secondary/20 text-secondary'
                     } backdrop-blur-sm`}>
-                        <div className={`w-2 h-2 rounded-full ${dummyData.isActive ? 'bg-success' : 'bg-secondary'}`}></div>
-                        <span>{dummyData.isActive ? 'Active' : 'Inactive'}</span>
+                        <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-success' : 'bg-secondary'}`}></div>
+                        <span>{isActive ? 'Active' : 'Inactive'}</span>
                     </div>
                 </div>
 
                 {/* Category badge */}
                 <div className="absolute top-3 right-3">
-                    <span className={`badge ${getCategoryColor(dummyData.category)} backdrop-blur-sm`}>
-                        {dummyData.category}
+                    <span className={`badge ${getCategoryColor(clubCategory)} backdrop-blur-sm`}>
+                        {clubCategory}
                     </span>
                 </div>
 
@@ -75,16 +72,15 @@ const ClubCard = ({ club }) => {
                     <div className="flex items-center space-x-4">
                         <div className="flex items-center text-secondary">
                             <Users size={14} className="mr-1" />
-                            <span>{dummyData.memberCount} members</span>
+                            <span>{memberCount} members</span>
                         </div>
                         <div className="flex items-center text-secondary">
                             <Calendar size={14} className="mr-1" />
-                            <span>{dummyData.upcomingEvents} events</span>
+                            <span>{eventCount} events</span>
                         </div>
                     </div>
-                    <div className="flex items-center text-warning">
-                        <Star size={14} className="mr-1 fill-current" />
-                        <span className="font-medium">{dummyData.rating}</span>
+                    <div className="flex items-center text-accent">
+                        <span className="text-xs font-medium">Est. {club.founded_date ? new Date(club.founded_date).getFullYear() : 'Recently'}</span>
                     </div>
                 </div>
 

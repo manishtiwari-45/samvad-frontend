@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { photoApi } from '../services/api';
 import { Plus, Camera, Loader2, X, Trash2 } from 'lucide-react';
+import SecureErrorHandler from '../utils/errorHandler';
 
 // A simple, self-contained Modal component for the upload form
 const UploadModal = ({ isOpen, onClose, onUpload, loading }) => {
@@ -71,7 +72,7 @@ const GalleryPage = () => {
             const response = await photoApi.getGallery();
             setPhotos(response.data);
         } catch (err) {
-            setError('Failed to fetch photos. Please try again later.');
+            setError(SecureErrorHandler.handleApiError(err));
         } finally {
             setLoading(false);
         }
@@ -88,7 +89,7 @@ const GalleryPage = () => {
             setPhotos([response.data, ...photos]); // Add new photo to the top of the list
             setIsModalOpen(false);
         } catch (err) {
-            alert('Upload failed: ' + (err.response?.data?.detail || 'Please try again.'));
+            alert(SecureErrorHandler.handleUploadError(err));
         } finally {
             setLoading(false);
         }
@@ -101,7 +102,7 @@ const GalleryPage = () => {
             await photoApi.deleteFromGallery(photoId);
             setPhotos(photos.filter(p => p.id !== photoId)); // Remove photo from state
         } catch (err) {
-            alert('Delete failed: ' + (err.response?.data?.detail || 'Please try again.'));
+            alert(SecureErrorHandler.handleApiError(err));
         }
     };
 

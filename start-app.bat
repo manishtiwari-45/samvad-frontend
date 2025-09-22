@@ -1,10 +1,10 @@
 @echo off
-title StarHive - Starting Application
+title SAMVAD - Starting Application
 color 0A
 
 echo.
 echo ========================================
-echo    🌟 StarHive Application Startup 🌟
+echo    🌟 SAMVAD Application Startup 🌟
 echo ========================================
 echo.
 
@@ -25,7 +25,7 @@ if not exist .env.local (
     echo.
 )
 
-echo [4/4] Starting StarHive...
+echo [4/4] Starting SAMVAD...
 echo.
 echo ✅ Application starting at http://localhost:5173
 echo ✅ Backend should be running at http://localhost:8000

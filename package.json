@@ -1,5 +1,5 @@
 {
-  "name": "starhive-frontend",
+  "name": "samvad-frontend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "backend": "cd ../stellarhub-backend && uvicorn app.main:app --reload",
+    "backend": "cd ../samvad-backend && start_backend.bat",
     "start:all": "concurrently \"npm run backend\" \"npm run dev\""
   },
   "dependencies": {

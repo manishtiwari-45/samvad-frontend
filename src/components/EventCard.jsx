@@ -9,19 +9,15 @@ const EventCard = ({ event }) => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [isBookmarked, setIsBookmarked] = useState(false);
 
-    const dummyData = {
-        imageUrl: `https://picsum.photos/seed/${event.id + 100}/400/200`,
-        category: ['Technology', 'Arts', 'Sports', 'Academic', 'Social', 'Workshop'][Math.floor(Math.random() * 6)],
-        price: Math.random() > 0.7 ? `₹${Math.floor(Math.random() * 500) + 100}` : 'Free',
-        level: ['Beginner', 'Intermediate', 'Advanced', 'All Levels'][Math.floor(Math.random() * 4)],
-        attendees: Math.floor(Math.random() * 150) + 20,
-        maxAttendees: Math.floor(Math.random() * 200) + 100,
-        location: ['Main Auditorium', 'Tech Lab', 'Sports Complex', 'Library Hall', 'Online'][Math.floor(Math.random() * 5)],
-        organizer: 'Tech Club',
-        rating: (4 + Math.random()).toFixed(1),
-        isPopular: Math.random() > 0.7,
-        isFull: Math.random() > 0.9,
-    };
+    // Use real event data with fallbacks
+    const eventImageUrl = event.image_url || `https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=200&fit=crop&crop=center`;
+    const eventLocation = event.location || 'Location TBA';
+    const eventPrice = event.price || 'Free';
+    const registeredCount = event.attendees?.length || 0;
+    const maxAttendees = event.max_attendees || 100;
+    const organizerName = event.club?.name || 'Event Organizer';
+    const eventCategory = event.category || 'General';
+    const isFull = registeredCount >= maxAttendees;
 
     const eventDate = new Date(event.date);
     const eventTime = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -53,7 +49,7 @@ const EventCard = ({ event }) => {
     const handleRegister = async (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (dummyData.isFull) return;
+        if (isFull) return;
         
         setIsRegistering(true);
         try {
@@ -75,8 +71,8 @@ const EventCard = ({ event }) => {
 
     return (
         <div className="card-hover overflow-hidden group animate-fade-in-up relative">
-            {/* Popular badge */}
-            {dummyData.isPopular && (
+            {/* Popular badge - show if event has high registration */}
+            {registeredCount > maxAttendees * 0.8 && (
                 <div className="absolute top-3 left-3 z-10">
                     <div className="bg-warning text-white text-xs px-2 py-1 rounded-full font-semibold flex items-center">
                         <Star size={12} className="mr-1 fill-current" />
@@ -99,7 +95,7 @@ const EventCard = ({ event }) => {
                 <div className="relative h-48 overflow-hidden">
                     <img 
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-                        src={dummyData.imageUrl} 
+                        src={eventImageUrl} 
                         alt={`${event.name} image`}
                         loading="lazy"
                     />
@@ -108,9 +104,9 @@ const EventCard = ({ event }) => {
                     {/* Price badge */}
                     <div className="absolute bottom-3 right-3">
                         <span className={`badge font-semibold ${
-                            dummyData.price === 'Free' ? 'bg-success text-white' : 'bg-accent text-white'
+                            eventPrice === 'Free' ? 'bg-success text-white' : 'bg-accent text-white'
                         } backdrop-blur-sm`}>
-                            {dummyData.price}
+                            {eventPrice}
                         </span>
                     </div>
 
@@ -126,13 +122,10 @@ const EventCard = ({ event }) => {
 
                 {/* Event Details */}
                 <div className="p-6">
-                    {/* Category and Level */}
-                    <div className="flex items-center justify-between mb-3">
-                        <span className={`badge ${getCategoryColor(dummyData.category)}`}>
-                            {dummyData.category}
-                        </span>
-                        <span className={`badge ${getLevelColor(dummyData.level)}`}>
-                            {dummyData.level}
+                    {/* Category */}
+                    <div className="flex items-center mb-3">
+                        <span className={`badge ${getCategoryColor(eventCategory)}`}>
+                            {eventCategory}
                         </span>
                     </div>
 
@@ -160,37 +153,31 @@ const EventCard = ({ event }) => {
                         </div>
                         <div className="flex items-center">
                             <MapPin size={14} className="mr-2 text-accent" />
-                            <span>{dummyData.location}</span>
+                            <span>{eventLocation}</span>
                         </div>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                                <Users size={14} className="mr-2 text-accent" />
-                                <span>{dummyData.attendees}/{dummyData.maxAttendees} registered</span>
-                            </div>
-                            <div className="flex items-center text-warning">
-                                <Star size={14} className="mr-1 fill-current" />
-                                <span className="font-medium">{dummyData.rating}</span>
-                            </div>
+                        <div className="flex items-center">
+                            <Users size={14} className="mr-2 text-accent" />
+                            <span>{registeredCount}/{maxAttendees} registered</span>
                         </div>
                     </div>
 
                     {/* Organizer */}
                     <div className="text-xs text-secondary-muted mb-4">
-                        Organized by <span className="font-medium text-secondary">{dummyData.organizer}</span>
+                        Organized by <span className="font-medium text-secondary">{organizerName}</span>
                     </div>
 
                     {/* Progress bar for registration */}
                     <div className="mb-4">
                         <div className="flex justify-between text-xs text-secondary-muted mb-1">
                             <span>Registration</span>
-                            <span>{Math.round((dummyData.attendees / dummyData.maxAttendees) * 100)}%</span>
+                            <span>{Math.round((registeredCount / maxAttendees) * 100)}%</span>
                         </div>
                         <div className="w-full bg-background-tertiary rounded-full h-1.5">
                             <div 
                                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                                    dummyData.attendees / dummyData.maxAttendees > 0.8 ? 'bg-warning' : 'bg-accent'
+                                    registeredCount / maxAttendees > 0.8 ? 'bg-warning' : 'bg-accent'
                                 }`}
-                                style={{ width: `${(dummyData.attendees / dummyData.maxAttendees) * 100}%` }}
+                                style={{ width: `${(registeredCount / maxAttendees) * 100}%` }}
                             ></div>
                         </div>
                     </div>
@@ -213,9 +200,9 @@ const EventCard = ({ event }) => {
                 <div className="p-6 pt-0">
                     <button 
                         onClick={handleRegister} 
-                        disabled={isRegistering || dummyData.isFull}
+                        disabled={isRegistering || isFull}
                         className={`w-full px-4 py-3 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                            dummyData.isFull 
+                            isFull 
                                 ? 'bg-secondary/20 text-secondary cursor-not-allowed' 
                                 : 'btn-success hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg'
                         }`}
@@ -225,7 +212,7 @@ const EventCard = ({ event }) => {
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                                 Registering...
                             </div>
-                        ) : dummyData.isFull ? (
+                        ) : isFull ? (
                             'Event Full'
                         ) : (
                             'Register Now'

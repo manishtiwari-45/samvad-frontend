@@ -1,8 +1,8 @@
-// StarHive Application Verification Script
+// SAMVAD Application Verification Script
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔍 StarHive Application Verification\n');
+console.log('🔍 SAMVAD Application Verification\n');
 
 // Check if all essential files exist
 const essentialFiles = [
@@ -97,7 +97,7 @@ if (allFilesExist) {
     console.log('Please check the missing files above');
 }
 
-console.log('\n🌟 StarHive Features Available:');
+console.log('\n🌟 SAMVAD Features Available:');
 console.log('• Modern Landing Page');
 console.log('• Beautiful Authentication');
 console.log('• Role-based Dashboards');

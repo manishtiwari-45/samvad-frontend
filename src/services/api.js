@@ -62,7 +62,7 @@ export const authApi = {
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         });
     },
-    loginWithGoogle: (googleToken, role = 'student') => apiClient.post('/users/google-login', { token: googleToken, role }),
+    loginWithGoogle: (googleToken) => apiClient.post('/users/google-login', { token: googleToken }),
     getCurrentUser: () => apiClient.get('/users/me'),
     getMyClubs: () => apiClient.get('/users/me/administered-clubs'),
     enrollFace: (imageBlob) => {
@@ -162,5 +162,40 @@ export const adminApi = {
     updateUserRole: (userId, newRole) => apiClient.put(`/admin/users/${userId}/role?new_role=${newRole}`),
     deleteUser: (userId) => apiClient.delete(`/admin/users/${userId}`),
     getDashboardStats: () => apiClient.get('/admin/stats'),
+};
+
+// ============================================================================
+// --- 📊 Analytics API ---
+// ============================================================================
+export const analyticsApi = {
+    getDashboardStats: () => apiClient.get('/analytics/dashboard-stats'),
+    getClubAnalytics: (clubId) => apiClient.get(`/analytics/club-analytics/${clubId}`),
+    getUserActivity: () => apiClient.get('/analytics/user-activity'),
+};
+
+// ============================================================================
+// --- 🎯 Attendance API ---
+// ============================================================================
+export const attendanceApi = {
+    startLiveSession: () => apiClient.post('/attendance/start-session'),
+    submitFrame: (imageBlob) => {
+        const formData = new FormData();
+        formData.append('file', imageBlob, 'frame.jpg');
+        return apiClient.post('/attendance/recognize', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+    },
+};
+
+// ============================================================================
+// --- 🔐 Role Requests API ---
+// ============================================================================
+export const roleRequestApi = {
+    requestRole: (requestData) => apiClient.post('/role-requests/request-role', requestData),
+    getMyRequests: () => apiClient.get('/role-requests/my-requests'),
+    getAllRequests: () => apiClient.get('/role-requests/all-requests'),
+    getPendingRequests: () => apiClient.get('/role-requests/pending-requests'),
+    reviewRequest: (requestId, reviewData) => apiClient.post(`/role-requests/review-request/${requestId}`, reviewData),
+    cancelRequest: (requestId) => apiClient.delete(`/role-requests/cancel-request/${requestId}`),
 };
 

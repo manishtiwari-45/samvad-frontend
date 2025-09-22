@@ -1,4 +1,4 @@
-# 🌟 StarHive Frontend
+# 🌟 SAMVAD Frontend
 
 A modern, responsive web application for campus community management built with React, Vite, and Tailwind CSS.
 
@@ -57,7 +57,7 @@ A modern, responsive web application for campus community management built with 
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd stellarhub-frontend
+   cd samvad-frontend
    ```
 
 2. **Install dependencies**
@@ -219,4 +219,4 @@ For support and questions:
 
 ---
 
-**Made with ❤️ by the StarHive Team**
+**Made with ❤️ by the SAMVAD Team**

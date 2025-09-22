@@ -75,7 +75,7 @@ const LandingPage = () => {
                 <Star className="h-5 w-5 sm:h-6 sm:w-6 text-white relative z-10" />
               </div>
               <div className="text-left">
-                <h1 className="text-4xl sm:text-5xl font-bold text-primary">StarHive</h1>
+                <h1 className="text-4xl sm:text-5xl font-bold text-primary">SAMVAD</h1>
                 <p className="text-lg sm:text-xl text-secondary font-medium">Campus Community Platform</p>
               </div>
             </motion.div>
@@ -140,7 +140,7 @@ const LandingPage = () => {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8">Why Choose StarHive?</h2>
+              <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8">Why Choose SAMVAD?</h2>
               <p className="text-xl md:text-2xl text-secondary max-w-4xl mx-auto leading-relaxed">
                 Everything you need to make the most of your campus life in one place
               </p>
@@ -208,7 +208,7 @@ const LandingPage = () => {
             <div className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium mb-6">
               <Zap size={16} className="mr-2" /> Ready to get started?
             </div>
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8">Join StarHive Today</h2>
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8">Join SAMVAD Today</h2>
             <p className="text-xl md:text-2xl text-secondary mb-10 max-w-3xl mx-auto">
               Connect with your campus community, discover opportunities, and make the most of your student life.
             </p>
@@ -244,11 +244,11 @@ const LandingPage = () => {
               </div>
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-primary mb-8">Built with ❤️ by Developers</h2>
               <p className="text-xl md:text-2xl text-secondary max-w-4xl mx-auto leading-relaxed">
-                StarHive was crafted by passionate developers who believe in the power of community and technology to transform campus life.
+                SAMVAD was crafted by passionate developers who believe in the power of community and technology to transform campus life.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
               {/* Developer 1 */}
               <motion.div 
                 className="bg-card rounded-3xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-300 group"
@@ -260,29 +260,55 @@ const LandingPage = () => {
               >
                 <div className="text-center">
                   <div className="relative mx-auto mb-6">
-                    <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                      <User className="h-12 w-12 text-white" />
+                    <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-accent/20">
+                      {/* Manish Tiwari's Photo */}
+                      <img 
+                        src="/team-photos/manish-tiwari.jpg" 
+                        alt="Manish Tiwari" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      {/* Fallback icon if image fails to load */}
+                      <div className="w-full h-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center" style={{display: 'none'}}>
+                        <User className="h-12 w-12 text-white" />
+                      </div>
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-card flex items-center justify-center">
                       <CheckCircle className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Alex Johnson</h3>
+                  <h3 className="text-2xl font-bold text-primary mb-2">Manish Tiwari</h3>
                   <p className="text-accent font-semibold mb-3">Full Stack Developer</p>
                   <p className="text-secondary text-sm leading-relaxed mb-4">
                     Passionate about creating seamless user experiences and robust backend systems. 
                     Specializes in React, Node.js, and modern web technologies.
                   </p>
                   <div className="flex justify-center space-x-3">
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer">
+                    <a 
+                      href="https://github.com/manishtiwari-45" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                    >
                       <Github className="h-4 w-4 text-accent" />
-                    </div>
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer">
+                    </a>
+                    <a 
+                      href="https://www.linkedin.com/in/manish-tiwari2578/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                    >
                       <Linkedin className="h-4 w-4 text-accent" />
-                    </div>
-                    <div className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer">
+                    </a>
+                    <a 
+                      href="mailto:manishtiwari2578@gmail.com" 
+                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                    >
                       <Mail className="h-4 w-4 text-accent" />
-                    </div>
+                    </a>
                   </div>
                 </div>
               </motion.div>
@@ -298,67 +324,55 @@ const LandingPage = () => {
               >
                 <div className="text-center">
                   <div className="relative mx-auto mb-6">
-                    <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                      <User className="h-12 w-12 text-white" />
+                    <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-500/20">
+                      {/* Replace this src with your actual photo */}
+                      <img 
+                        src="/team-photos/anuradha-tiwari.jpg" 
+                        alt="Anuradha Tiwari" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      {/* Fallback icon if image fails to load */}
+                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center" style={{display: 'none'}}>
+                        <User className="h-12 w-12 text-white" />
+                      </div>
                     </div>
                     <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full border-4 border-card flex items-center justify-center">
                       <Zap className="h-4 w-4 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Sarah Chen</h3>
-                  <p className="text-purple-600 font-semibold mb-3">UI/UX Designer & Frontend Dev</p>
+                  <h3 className="text-2xl font-bold text-primary mb-2">Anuradha Tiwari</h3>
+                  <p className="text-purple-600 font-semibold mb-3">UI/UX Designer & Backend Dev</p>
                   <p className="text-secondary text-sm leading-relaxed mb-4">
                     Creative designer with a keen eye for beautiful interfaces and user-centered design. 
-                    Expert in Figma, React, and creating delightful user experiences.
+                    Expert in Figma, Python, and creating good routes and APIs.
                   </p>
                   <div className="flex justify-center space-x-3">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer">
+                    <a 
+                      href="https://github.com/Anuradhatiwari01" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
+                    >
                       <Github className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer">
+                    </a>
+                    <a 
+                      href="https://www.linkedin.com/in/anuradha-tiwari-529056329/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
+                    >
                       <Linkedin className="h-4 w-4 text-purple-600" />
-                    </div>
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer">
+                    </a>
+                    <a 
+                      href="mailto:anuradhatiwari2401@gmail.com" 
+                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
+                    >
                       <Mail className="h-4 w-4 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Developer 3 */}
-              <motion.div 
-                className="bg-card rounded-3xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-300 group md:col-span-2 lg:col-span-1"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-              >
-                <div className="text-center">
-                  <div className="relative mx-auto mb-6">
-                    <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all duration-300">
-                      <User className="h-12 w-12 text-white" />
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-orange-500 rounded-full border-4 border-card flex items-center justify-center">
-                      <Trophy className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Mike Rodriguez</h3>
-                  <p className="text-emerald-600 font-semibold mb-3">Backend Engineer & DevOps</p>
-                  <p className="text-secondary text-sm leading-relaxed mb-4">
-                    Backend wizard specializing in scalable architectures and cloud infrastructure. 
-                    Expert in Python, FastAPI, databases, and ensuring everything runs smoothly.
-                  </p>
-                  <div className="flex justify-center space-x-3">
-                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-colors cursor-pointer">
-                      <Github className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-colors cursor-pointer">
-                      <Linkedin className="h-4 w-4 text-emerald-600" />
-                    </div>
-                    <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center hover:bg-emerald-200 transition-colors cursor-pointer">
-                      <Mail className="h-4 w-4 text-emerald-600" />
-                    </div>
+                    </a>
                   </div>
                 </div>
               </motion.div>
@@ -402,7 +416,7 @@ const LandingPage = () => {
             >
               <h3 className="text-2xl md:text-3xl font-bold text-primary mb-4">Want to Contribute?</h3>
               <p className="text-secondary mb-6 max-w-2xl mx-auto">
-                StarHive is open source! Join our community of developers and help us build the future of campus engagement.
+                SAMVAD is open source! Join our community of developers and help us build the future of campus engagement.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
                 <motion.button 
@@ -432,7 +446,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-lg font-semibold text-primary mb-4">StarHive</h3>
+              <h3 className="text-lg font-semibold text-primary mb-4">SAMVAD</h3>
               <p className="text-secondary text-sm">Empowering student communities and enhancing campus engagement through technology.</p>
             </div>
             <div>
@@ -501,7 +515,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="mt-12 pt-8 border-t border-border">
-            <p className="text-sm text-secondary text-center">&copy; {new Date().getFullYear()} StarHive. All rights reserved.</p>
+            <p className="text-sm text-secondary text-center">&copy; {new Date().getFullYear()} SAMVAD. All rights reserved.</p>
           </div>
         </div>
       </footer>

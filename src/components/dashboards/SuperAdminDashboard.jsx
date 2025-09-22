@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { adminApi, clubApi } from '../../services/api';
+import { adminApi, clubApi, analyticsApi } from '../../services/api';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Users, TentTree, CalendarDays, HeartPulse, Trash, Edit, LayoutDashboard, UserCog, ShieldCheck } from 'lucide-react';
+import { Users, TentTree, CalendarDays, HeartPulse, Trash, Edit, LayoutDashboard, UserCog, ShieldCheck, UserCheck } from 'lucide-react';
+import RoleRequestManagement from '../RoleRequestManagement';
 
 // Panel 1: Overview
 const OverviewPanel = ({ setActiveTab }) => {
@@ -12,9 +13,24 @@ const OverviewPanel = ({ setActiveTab }) => {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const response = await adminApi.getDashboardStats();
-                setStats(response.data);
-            } catch (error) { console.error("Failed to fetch dashboard stats", error); } 
+                const [adminResponse, analyticsResponse] = await Promise.all([
+                    adminApi.getDashboardStats(),
+                    analyticsApi.getDashboardStats()
+                ]);
+                setStats({
+                    ...adminResponse.data,
+                    ...analyticsResponse.data
+                });
+            } catch (error) { 
+                console.error("Failed to fetch dashboard stats", error);
+                // Fallback to just admin stats if analytics fails
+                try {
+                    const response = await adminApi.getDashboardStats();
+                    setStats(response.data);
+                } catch (fallbackError) {
+                    console.error("Failed to fetch admin stats", fallbackError);
+                }
+            } 
             finally { setLoading(false); }
         };
         fetchStats();
@@ -39,11 +55,45 @@ const OverviewPanel = ({ setActiveTab }) => {
     return (
         <div className="space-y-8 animate-fade-in">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <StatCard title="Total Users" value={stats?.total_users || 0} icon={Users} color="bg-blue-500/10 text-blue-400" onClick={() => setActiveTab('userManagement')} />
-                <StatCard title="Active Clubs" value={stats?.active_clubs || 0} icon={TentTree} color="bg-green-500/10 text-green-400" onClick={() => setActiveTab('clubOversight')} />
-                <StatCard title="Total Events" value={stats?.total_events || 0} icon={CalendarDays} color="bg-purple-500/10 text-purple-400" />
-                <StatCard title="System Health" value="98.5%" icon={HeartPulse} color="bg-teal-500/10 text-teal-400" />
+                <StatCard title="Total Users" value={stats?.totals?.users || stats?.total_users || 0} icon={Users} color="bg-blue-500/10 text-blue-400" onClick={() => setActiveTab('userManagement')} />
+                <StatCard title="Active Clubs" value={stats?.totals?.clubs || stats?.active_clubs || 0} icon={TentTree} color="bg-green-500/10 text-green-400" onClick={() => setActiveTab('clubOversight')} />
+                <StatCard title="Total Events" value={stats?.totals?.events || stats?.total_events || 0} icon={CalendarDays} color="bg-purple-500/10 text-purple-400" />
+                <StatCard title="Active Events" value={stats?.totals?.active_events || 0} icon={HeartPulse} color="bg-teal-500/10 text-teal-400" />
             </div>
+            
+            {/* Analytics Charts */}
+            {stats?.popular_clubs && stats.popular_clubs.length > 0 && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Popular Clubs</h3>
+                        <div className="space-y-3">
+                            {stats.popular_clubs.slice(0, 5).map((club, index) => (
+                                <div key={index} className="flex justify-between items-center">
+                                    <span className="text-gray-700">{club.name}</span>
+                                    <span className="font-semibold text-blue-600">{club.members} members</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Events</h3>
+                        <div className="space-y-3">
+                            {stats.upcoming_events?.slice(0, 5).map((event, index) => (
+                                <div key={index} className="flex justify-between items-center">
+                                    <div>
+                                        <div className="text-gray-700">{event.name}</div>
+                                        <div className="text-sm text-gray-500">
+                                            {new Date(event.date).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <span className="font-semibold text-green-600">{event.registrations} registered</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -150,16 +200,18 @@ const SuperAdminDashboard = () => {
         <div className="space-y-8">
             <div>
                 <h1 className="text-4xl font-bold text-primary">Super Admin Dashboard</h1>
-                <p className="text-secondary mt-1">Monitor and manage the entire StarHive platform.</p>
+                <p className="text-secondary mt-1">Monitor and manage the entire SAMVAD platform.</p>
             </div>
             <div className="bg-card border border-border p-2 rounded-lg flex space-x-2">
                 <button onClick={() => setActiveTab('overview')} className={getTabClass('overview')}><LayoutDashboard size={16} className="mr-2"/> Overview</button>
                 <button onClick={() => setActiveTab('userManagement')} className={getTabClass('userManagement')}><UserCog size={16} className="mr-2"/> User Management</button>
+                <button onClick={() => setActiveTab('roleRequests')} className={getTabClass('roleRequests')}><UserCheck size={16} className="mr-2"/> Role Requests</button>
                 <button onClick={() => setActiveTab('clubOversight')} className={getTabClass('clubOversight')}><ShieldCheck size={16} className="mr-2"/> Club Oversight</button>
             </div>
             <div className="mt-6">
                 {activeTab === 'overview' && <OverviewPanel setActiveTab={setActiveTab} />}
                 {activeTab === 'userManagement' && <UserManagementPanel />}
+                {activeTab === 'roleRequests' && <RoleRequestManagement />}
                 {activeTab === 'clubOversight' && <ClubOversightPanel />}
             </div>
         </div>

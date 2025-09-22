@@ -3,69 +3,6 @@ import { eventApi } from '../services/api';
 import EventCard from '../components/EventCard';
 import { Search, Filter, Sparkles, Loader2, Frown, Calendar, Clock, MapPin, Users, Star, SlidersHorizontal, X, Grid3X3, List } from 'lucide-react';
 
-// Enhanced dummy data with more details
-const dummyEvents = [
-    { 
-        id: 'd1', 
-        name: 'AI & Machine Learning Workshop', 
-        description: 'A comprehensive hands-on workshop covering the fundamentals of AI, machine learning algorithms, and practical applications in real-world scenarios.', 
-        date: '2025-01-25T10:00:00Z',
-        category: 'Technology',
-        level: 'Intermediate',
-        price: 'Free',
-        location: 'Tech Lab'
-    },
-    { 
-        id: 'd2', 
-        name: 'Annual Music Fest', 
-        description: 'Experience the best musical talent on campus with performances from student bands, solo artists, and special guest musicians.', 
-        date: '2025-01-27T18:00:00Z',
-        category: 'Arts',
-        level: 'All Levels',
-        price: '₹200',
-        location: 'Main Auditorium'
-    },
-    { 
-        id: 'd3', 
-        name: 'Photography Exhibition', 
-        description: 'A stunning showcase of visual artistry captured by our talented student photographers, featuring diverse themes and techniques.', 
-        date: '2025-01-30T12:00:00Z',
-        category: 'Arts',
-        level: 'All Levels',
-        price: 'Free',
-        location: 'Gallery Hall'
-    },
-    { 
-        id: 'd4', 
-        name: 'Startup Pitch Competition', 
-        description: 'Present your innovative business ideas to industry experts and compete for funding and mentorship opportunities.', 
-        date: '2025-02-02T14:00:00Z',
-        category: 'Academic',
-        level: 'Advanced',
-        price: '₹100',
-        location: 'Business Center'
-    },
-    { 
-        id: 'd5', 
-        name: 'Sports Day Championship', 
-        description: 'Annual inter-college sports competition featuring various athletic events, team sports, and individual competitions.', 
-        date: '2025-02-05T09:00:00Z',
-        category: 'Sports',
-        level: 'All Levels',
-        price: 'Free',
-        location: 'Sports Complex'
-    },
-    { 
-        id: 'd6', 
-        name: 'Cultural Dance Festival', 
-        description: 'Celebrate diversity through traditional and contemporary dance performances from different cultures around the world.', 
-        date: '2025-02-08T19:00:00Z',
-        category: 'Arts',
-        level: 'All Levels',
-        price: '₹150',
-        location: 'Main Auditorium'
-    },
-];
 
 const categories = ['All', 'Technology', 'Arts', 'Sports', 'Academic', 'Social', 'Workshop'];
 const timeFilters = ['All Time', 'This Week', 'This Month', 'Next Month'];
@@ -96,13 +33,13 @@ const DiscoverEventsPage = () => {
                     recommendedEventsPromise,
                 ]);
                 
-                setAllEvents(allEventsRes.data.length > 0 ? allEventsRes.data : dummyEvents);
-                setRecommendedEvents(recommendedEventsRes.data.length > 0 ? recommendedEventsRes.data : dummyEvents.slice(0, 3));
+                setAllEvents(allEventsRes.data || []);
+                setRecommendedEvents(recommendedEventsRes.data || []);
             } catch (error) {
                 console.error("Failed to fetch events", error);
                 setError("Could not load events. Please try again later.");
-                setAllEvents(dummyEvents);
-                setRecommendedEvents(dummyEvents.slice(0, 3));
+                setAllEvents([]);
+                setRecommendedEvents([]);
             } finally {
                 setLoading(false);
             }

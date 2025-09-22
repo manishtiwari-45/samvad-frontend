@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ScanFace, CheckCircle, User, TentTree, Calendar, Trophy, Target, BookOpen, Zap, Plus, Activity, Star, Users } from 'lucide-react';
+import { ArrowRight, ScanFace, CheckCircle, User, TentTree, Calendar, Trophy, Target, BookOpen, Zap, Plus, Activity, Star, Users, UserCheck, Clock, Shield } from 'lucide-react';
+import RoleRequestModal from '../RoleRequestModal';
+import { roleRequestApi } from '../../services/api';
 
 // Enhanced Dashboard Card component
 const DashboardCard = ({ to, icon, title, children, className = "", stats = null }) => (
@@ -63,29 +65,74 @@ const StatsCard = ({ icon, label, value, change, color = "accent" }) => (
 
 const StudentDashboard = () => {
     const { user } = useAuth();
+    const [showRoleRequestModal, setShowRoleRequestModal] = useState(false);
+    const [roleRequests, setRoleRequests] = useState([]);
+    const [loadingRequests, setLoadingRequests] = useState(false);
 
-    // Enhanced dummy data for better dashboard experience
+    // Use real user data with fallbacks
+    const userClubs = user.clubs || [];
+    const userEvents = user.events_attending || [];
     const dashboardData = {
         stats: {
-            points: 245,
-            streak: 7,
-            achievements: 5,
-            rank: 23,
+            clubs: userClubs.length,
+            events: userEvents.length,
+            profile: user.face_encoding ? 'Complete' : 'Incomplete',
         },
+        upcomingEvents: userEvents.filter(event => new Date(event.date) > new Date()).slice(0, 3),
+        memberClubs: userClubs.slice(0, 3),
         recentActivity: [
-            { type: 'event', title: 'Attended AI Workshop', time: '2 hours ago', icon: '🤖' },
-            { type: 'club', title: 'Joined Photography Club', time: '1 day ago', icon: '📸' },
-            { type: 'achievement', title: 'Earned Early Bird Badge', time: '3 days ago', icon: '🏆' },
-        ],
-        upcomingEvents: [
-            { name: 'React Workshop', date: 'Tomorrow', time: '2:00 PM' },
-            { name: 'Photography Walk', date: 'Friday', time: '4:00 PM' },
-        ],
-        recommendations: [
-            { type: 'club', name: 'Coding Club', reason: 'Based on your interests' },
-            { type: 'event', name: 'Design Thinking Workshop', reason: 'Popular in your network' },
+            {
+                icon: '🎉',
+                title: 'Welcome to SAMVAD!',
+                time: 'Just now'
+            },
+            {
+                icon: '👤',
+                title: 'Profile created successfully',
+                time: '1 day ago'
+            },
+            {
+                icon: '🔍',
+                title: 'Explore clubs and events',
+                time: '2 days ago'
+            }
         ]
     };
+
+    // Fetch user's role requests
+    useEffect(() => {
+        const fetchRoleRequests = async () => {
+            if (user?.role === 'student') {
+                setLoadingRequests(true);
+                try {
+                    const response = await roleRequestApi.getMyRequests();
+                    setRoleRequests(response.data);
+                } catch (error) {
+                    console.error('Failed to fetch role requests:', error);
+                } finally {
+                    setLoadingRequests(false);
+                }
+            }
+        };
+
+        fetchRoleRequests();
+    }, [user]);
+
+    const handleRoleRequestSuccess = () => {
+        // Refresh role requests after successful submission
+        const fetchRoleRequests = async () => {
+            try {
+                const response = await roleRequestApi.getMyRequests();
+                setRoleRequests(response.data);
+            } catch (error) {
+                console.error('Failed to fetch role requests:', error);
+            }
+        };
+        fetchRoleRequests();
+    };
+
+    const hasPendingRequest = roleRequests.some(req => req.status === 'pending');
+    const hasApprovedRequest = roleRequests.some(req => req.status === 'approved');
 
     if (!user) {
         return (
@@ -111,34 +158,24 @@ const StudentDashboard = () => {
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <StatsCard 
-                    icon={<Trophy size={20} />} 
-                    label="Points Earned" 
-                    value={dashboardData.stats.points} 
-                    change={12}
-                    color="warning"
-                />
-                <StatsCard 
-                    icon={<Zap size={20} />} 
-                    label="Day Streak" 
-                    value={dashboardData.stats.streak} 
-                    change={5}
+                    icon={<TentTree size={20} />} 
+                    label="Clubs Joined" 
+                    value={dashboardData.stats.clubs} 
                     color="success"
                 />
                 <StatsCard 
-                    icon={<Star size={20} />} 
-                    label="Achievements" 
-                    value={dashboardData.stats.achievements} 
-                    change={0}
+                    icon={<Calendar size={20} />} 
+                    label="Events Registered" 
+                    value={dashboardData.stats.events} 
                     color="info"
                 />
                 <StatsCard 
-                    icon={<Users size={20} />} 
-                    label="Campus Rank" 
-                    value={`#${dashboardData.stats.rank}`} 
-                    change={-2}
-                    color="accent"
+                    icon={<User size={20} />} 
+                    label="Profile Status" 
+                    value={dashboardData.stats.profile} 
+                    color={user.face_encoding ? "success" : "warning"}
                 />
             </div>
 
@@ -260,6 +297,101 @@ const StudentDashboard = () => {
                             </div>
                         )}
                     </div>
+
+                    {/* Role Request Card - Only for students */}
+                    {user.role === 'student' && (
+                        <div className="card-hover p-6 animate-fade-in-up">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-xl font-semibold text-primary flex items-center">
+                                    <Shield size={20} className="mr-3 text-accent" />
+                                    Admin Access
+                                </h2>
+                                {hasPendingRequest && (
+                                    <div className="badge-warning">
+                                        Pending Review
+                                    </div>
+                                )}
+                                {hasApprovedRequest && (
+                                    <div className="badge-success">
+                                        Approved
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {hasApprovedRequest ? (
+                                <div className="text-center p-6 bg-success/10 border border-success/20 rounded-xl">
+                                    <div className="w-16 h-16 bg-success/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CheckCircle className="text-success" size={24} />
+                                    </div>
+                                    <h3 className="font-semibold text-success mb-2">Admin Access Granted!</h3>
+                                    <p className="text-sm text-secondary mb-4">Your role upgrade has been approved. You now have Club Admin privileges.</p>
+                                    <div className="flex items-center justify-center text-xs text-secondary-muted">
+                                        <div className="w-2 h-2 bg-success rounded-full mr-2"></div>
+                                        Refresh the page to see your new dashboard
+                                    </div>
+                                </div>
+                            ) : hasPendingRequest ? (
+                                <div className="text-center p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+                                    <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Clock className="text-yellow-600" size={24} />
+                                    </div>
+                                    <h3 className="font-semibold text-yellow-800 mb-2">Request Under Review</h3>
+                                    <p className="text-sm text-yellow-700 mb-4">Your admin access request is being reviewed by Super Admins.</p>
+                                    <div className="space-y-2">
+                                        {roleRequests.filter(req => req.status === 'pending').map(request => (
+                                            <div key={request.id} className="text-xs text-yellow-600 bg-yellow-100 rounded-lg p-2">
+                                                <p><strong>Requested:</strong> {new Date(request.created_at).toLocaleDateString()}</p>
+                                                <p><strong>Status:</strong> Pending Review</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center p-6 bg-accent/5 border border-accent/20 rounded-xl">
+                                    <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <UserCheck className="text-accent" size={24} />
+                                    </div>
+                                    <h3 className="font-semibold text-primary mb-2">Need Admin Access?</h3>
+                                    <p className="text-sm text-secondary mb-4">Request Club Admin privileges to manage clubs and events.</p>
+                                    <button 
+                                        onClick={() => setShowRoleRequestModal(true)}
+                                        className="btn-primary"
+                                    >
+                                        <UserCheck size={16} className="mr-2" />
+                                        Request Admin Access
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Show recent requests */}
+                            {roleRequests.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-border">
+                                    <h4 className="text-sm font-medium text-primary mb-2">Recent Requests</h4>
+                                    <div className="space-y-2">
+                                        {roleRequests.slice(0, 2).map(request => (
+                                            <div key={request.id} className="flex items-center justify-between p-2 bg-background-tertiary rounded-lg">
+                                                <div className="flex items-center space-x-2">
+                                                    <div className={`w-2 h-2 rounded-full ${
+                                                        request.status === 'pending' ? 'bg-yellow-500' :
+                                                        request.status === 'approved' ? 'bg-green-500' : 'bg-red-500'
+                                                    }`}></div>
+                                                    <span className="text-xs text-secondary">
+                                                        {new Date(request.created_at).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <span className={`text-xs px-2 py-1 rounded-full ${
+                                                    request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    request.status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {request.status}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Sidebar */}
@@ -346,6 +478,12 @@ const StudentDashboard = () => {
                 </div>
             </div>
             
+            {/* Role Request Modal */}
+            <RoleRequestModal
+                isOpen={showRoleRequestModal}
+                onClose={() => setShowRoleRequestModal(false)}
+                onSuccess={handleRoleRequestSuccess}
+            />
         </div>
     );
 };
