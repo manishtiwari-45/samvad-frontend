@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+import { Upload, X, Image as ImageIcon, Calendar, User, Trash2 } from 'lucide-react';
 import { photoApi } from '../services/api';
-import { Plus, Camera, Loader2, X, Trash2 } from 'lucide-react';
-import SecureErrorHandler from '../utils/errorHandler';
+import { useAuth } from '../context/AuthContext';
+import { SecureErrorHandler } from '../utils/errorHandler';
+import { useToast } from '../hooks/useToast';
+import { logger } from '../utils/logger';
 
 // A simple, self-contained Modal component for the upload form
 const UploadModal = ({ isOpen, onClose, onUpload, loading }) => {

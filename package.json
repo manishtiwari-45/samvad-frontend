@@ -8,8 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "backend": "cd ../samvad-backend && start_backend.bat",
-    "start:all": "concurrently \"npm run backend\" \"npm run dev\""
+    "start:all": "npm run dev"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

@@ -27,7 +27,8 @@ const LiveAttendancePage = () => {
         startCamera();
 
         // 2. Naye "general" WebSocket se connect karein
-        const wsUrl = `ws://127.0.0.1:8000/attendance/ws/general`;
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const wsUrl = apiBaseUrl.replace('http', 'ws').replace('https', 'wss') + '/attendance/ws/general';
         wsRef.current = new WebSocket(wsUrl);
 
         wsRef.current.onopen = () => setIsConnected(true);

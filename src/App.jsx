@@ -6,6 +6,8 @@ import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import LoadingSpinner from './components/common/LoadingSpinner';
+import { ToastContainer } from './components/Toast';
+import { useToast } from './hooks/useToast';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import DashboardPage from './pages/DashboardPage';
@@ -42,6 +44,7 @@ const ProtectedRoute = () => {
 
 function App() {
     const { user, loading } = useAuth();
+    const { toasts, removeToast } = useToast();
     const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const hasGoogleClient = Boolean(googleClientId && String(googleClientId).trim());
 
@@ -122,6 +125,7 @@ function App() {
                     <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             )}
+            <ToastContainer toasts={toasts} removeToast={removeToast} />
             </ErrorBoundary>
         </NotificationProvider>
     );
