@@ -1,5 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment variables
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,30 +21,28 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
+# Development files
+start-app.bat
+run-test.bat
+test-build.js
+verify-app.js
+*.test.js
+*.spec.js
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-# Dependencies
-node_modules/
 
-# Build output
-dist/
+# OS files
+Thumbs.db
 
-.env*
-
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Cache
+.cache/
+.parcel-cache/
