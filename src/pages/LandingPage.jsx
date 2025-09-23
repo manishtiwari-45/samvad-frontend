@@ -248,8 +248,7 @@ const LandingPage = () => {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
-              {/* Developer 1 */}
+            <div className="max-w-md mx-auto">
               <motion.div 
                 className="bg-card rounded-3xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-300 group"
                 initial={{ opacity: 0, y: 30 }}
@@ -260,7 +259,7 @@ const LandingPage = () => {
               >
                 <div className="text-center">
                   <div className="relative mx-auto mb-6">
-                    <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-accent/20">
+                    <div className="w-40 h-40 mx-auto rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-accent/20">
                       {/* Manish Tiwari's Photo */}
                       <img 
                         src="/team-photos/manish-tiwari.jpg" 
@@ -273,105 +272,44 @@ const LandingPage = () => {
                       />
                       {/* Fallback icon if image fails to load */}
                       <div className="w-full h-full bg-gradient-to-br from-accent to-accent-hover flex items-center justify-center" style={{display: 'none'}}>
-                        <User className="h-12 w-12 text-white" />
+                        <User className="h-16 w-16 text-white" />
                       </div>
                     </div>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-card flex items-center justify-center">
-                      <CheckCircle className="h-4 w-4 text-white" />
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-green-500 rounded-full border-4 border-card flex items-center justify-center">
+                      <CheckCircle className="h-5 w-5 text-white" />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Manish Tiwari</h3>
-                  <p className="text-accent font-semibold mb-3">Full Stack Developer</p>
-                  <p className="text-secondary text-sm leading-relaxed mb-4">
+                  <h3 className="text-3xl font-bold text-primary mb-3">Manish Tiwari</h3>
+                  <p className="text-accent text-xl font-semibold mb-4">Full Stack Developer</p>
+                  <p className="text-secondary text-base leading-relaxed mb-6">
                     Passionate about creating seamless user experiences and robust backend systems. 
                     Specializes in React, Node.js, and modern web technologies.
                   </p>
-                  <div className="flex justify-center space-x-3">
+                  <div className="flex justify-center space-x-4">
                     <a 
                       href="https://github.com/manishtiwari-45" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      aria-label="GitHub Profile"
                     >
-                      <Github className="h-4 w-4 text-accent" />
+                      <Github className="h-5 w-5 text-accent" />
                     </a>
                     <a 
                       href="https://www.linkedin.com/in/manish-tiwari2578/" 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      aria-label="LinkedIn Profile"
                     >
-                      <Linkedin className="h-4 w-4 text-accent" />
+                      <Linkedin className="h-5 w-5 text-accent" />
                     </a>
                     <a 
                       href="mailto:manishtiwari2578@gmail.com" 
-                      className="w-8 h-8 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center hover:bg-accent/20 transition-colors cursor-pointer"
+                      aria-label="Email"
                     >
-                      <Mail className="h-4 w-4 text-accent" />
-                    </a>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Developer 2 */}
-              <motion.div 
-                className="bg-card rounded-3xl p-8 shadow-xl border border-border hover:shadow-2xl transition-all duration-300 group"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -10 }}
-              >
-                <div className="text-center">
-                  <div className="relative mx-auto mb-6">
-                    <div className="w-32 h-32 mx-auto rounded-full overflow-hidden shadow-lg group-hover:shadow-xl transition-all duration-300 border-4 border-purple-500/20">
-                      {/* Replace this src with your actual photo */}
-                      <img 
-                        src="/team-photos/anuradha-tiwari.jpg" 
-                        alt="Anuradha Tiwari" 
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'flex';
-                        }}
-                      />
-                      {/* Fallback icon if image fails to load */}
-                      <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center" style={{display: 'none'}}>
-                        <User className="h-12 w-12 text-white" />
-                      </div>
-                    </div>
-                    <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-500 rounded-full border-4 border-card flex items-center justify-center">
-                      <Zap className="h-4 w-4 text-white" />
-                    </div>
-                  </div>
-                  <h3 className="text-2xl font-bold text-primary mb-2">Anuradha Tiwari</h3>
-                  <p className="text-purple-600 font-semibold mb-3">UI/UX Designer & Backend Dev</p>
-                  <p className="text-secondary text-sm leading-relaxed mb-4">
-                    Creative designer with a keen eye for beautiful interfaces and user-centered design. 
-                    Expert in Figma, Python, and creating good routes and APIs.
-                  </p>
-                  <div className="flex justify-center space-x-3">
-                    <a 
-                      href="https://github.com/Anuradhatiwari01" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
-                    >
-                      <Github className="h-4 w-4 text-purple-600" />
-                    </a>
-                    <a 
-                      href="https://www.linkedin.com/in/anuradha-tiwari-529056329/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
-                    >
-                      <Linkedin className="h-4 w-4 text-purple-600" />
-                    </a>
-                    <a 
-                      href="mailto:anuradhatiwari2401@gmail.com" 
-                      className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center hover:bg-purple-200 transition-colors cursor-pointer"
-                    >
-                      <Mail className="h-4 w-4 text-purple-600" />
+                      <Mail className="h-5 w-5 text-accent" />
                     </a>
                   </div>
                 </div>
